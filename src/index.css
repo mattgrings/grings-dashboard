@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #222 #0A0A0A;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #333;
+  border-radius: 3px;
+}
+
+::selection {
+  background: rgba(0, 230, 32, 0.3);
+  color: #fff;
+}
+
+/* Cursor glow effect */
+.glow-surface {
+  position: relative;
+  overflow: hidden;
+}
+.glow-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 230, 32, 0.06),
+    transparent 60%
+  );
+  pointer-events: none;
+  transition: opacity 0.3s;
+  opacity: 0;
+  z-index: 1;
+}
+.glow-surface:hover::before {
+  opacity: 1;
+}
+
+/* Input focus glow */
+input:focus, textarea:focus, select:focus {
+  border-color: #00E620;
+  box-shadow: 0 0 0 3px rgba(0, 230, 32, 0.15), 0 0 20px rgba(0, 230, 32, 0.1);
+  outline: none;
+}
