@@ -7,8 +7,14 @@ import {
   ChartLineUp,
   Calculator,
   SignOut,
+  CloudCheck,
+  CloudArrowUp,
+  CloudSlash,
+  Warning,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
+import { useCloudSync } from '../../hooks/useCloudSync'
+import type { SyncStatus } from '../../hooks/useCloudSync'
 
 const alunoNav = [
   { path: '/aluno', icon: House, label: 'Inicio', end: true },
@@ -18,10 +24,20 @@ const alunoNav = [
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calc' },
 ]
 
+const syncIcons: Record<SyncStatus, { icon: typeof CloudCheck; color: string; label: string }> = {
+  synced: { icon: CloudCheck, color: 'text-[#00E620]', label: 'Sincronizado' },
+  syncing: { icon: CloudArrowUp, color: 'text-yellow-400 animate-pulse', label: 'Sincronizando...' },
+  offline: { icon: CloudSlash, color: 'text-gray-500', label: 'Offline' },
+  error: { icon: Warning, color: 'text-red-400', label: 'Erro de sync' },
+}
+
 export default function AlunoLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
+  const { status, forceSync } = useCloudSync()
+  const sync = syncIcons[status]
+  const SyncIcon = sync.icon
 
   const handleLogout = () => {
     logout()
@@ -38,6 +54,13 @@ export default function AlunoLayout() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={forceSync}
+            title={sync.label}
+            className="p-2 rounded-xl hover:bg-white/5 transition-colors"
+          >
+            <SyncIcon size={18} className={sync.color} />
+          </button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-[#00E620]/20 flex items-center justify-center text-[#00E620] text-xs font-bold">
               {user?.nome?.slice(0, 2).toUpperCase() ?? 'AL'}
