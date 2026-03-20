@@ -20,11 +20,28 @@ const defaultAdmin: User = {
   role: 'admin',
 }
 
+const defaultAlunos: User[] = [
+  {
+    id: 'aluno-1',
+    nome: 'Ana Beatriz',
+    email: 'ana@aluno.com',
+    senha: 'ana123',
+    role: 'aluno' as const,
+  },
+  {
+    id: 'aluno-2',
+    nome: 'Pedro Henrique',
+    email: 'pedro@aluno.com',
+    senha: 'pedro123',
+    role: 'aluno' as const,
+  },
+]
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      users: [defaultAdmin],
+      users: [defaultAdmin, ...defaultAlunos],
       isAuthenticated: false,
 
       login: (email, senha) => {

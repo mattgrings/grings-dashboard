@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EnvelopeSimple, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
 import { useAuthStore } from '../store/authStore'
@@ -9,6 +9,19 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const login = useAuthStore((s) => s.login)
+  const user = useAuthStore((s) => s.user)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  // Redirect based on role after login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'aluno') {
+        window.location.href = '/aluno'
+      } else {
+        window.location.href = '/'
+      }
+    }
+  }, [isAuthenticated, user])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,6 +159,17 @@ export default function Login() {
               Entrar
             </motion.button>
           </form>
+        </div>
+
+        {/* Test credentials hint */}
+        <div className="mt-6 text-center space-y-1">
+          <p className="text-gray-600 text-xs">Credenciais de teste:</p>
+          <p className="text-gray-500 text-xs">
+            Admin: <span className="text-gray-400">admin@grings.com</span> / <span className="text-gray-400">admin123</span>
+          </p>
+          <p className="text-gray-500 text-xs">
+            Aluno: <span className="text-gray-400">ana@aluno.com</span> / <span className="text-gray-400">ana123</span>
+          </p>
         </div>
       </motion.div>
     </div>

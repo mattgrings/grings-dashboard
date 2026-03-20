@@ -9,6 +9,8 @@ export interface User {
   avatar?: string
 }
 
+export type UserRole = 'admin' | 'aluno'
+
 // ==================== LEADS ====================
 
 export type StatusLead = 'novo' | 'contactado' | 'agendado' | 'convertido' | 'perdido'
