@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { House, Users, CurrencyDollar, ListChecks, UserPlus, CalendarBlank } from '@phosphor-icons/react'
+import { House, Users, CurrencyDollar, ListChecks, CalendarBlank } from '@phosphor-icons/react'
 
 const navItems = [
   { path: '/', icon: House, label: 'Home' },
