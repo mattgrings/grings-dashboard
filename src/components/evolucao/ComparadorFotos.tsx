@@ -110,7 +110,6 @@ export default function ComparadorFotos({ fotoAntes, fotoDepois }: ComparadorFot
 
   const hasAntesFoto = fotoAntes.url !== ''
   const hasDepoisFoto = fotoDepois.url !== ''
-  const hasBothEmpty = !hasAntesFoto && !hasDepoisFoto
   const hasBothPeso =
     fotoAntes.peso !== undefined &&
     fotoAntes.peso !== null &&
