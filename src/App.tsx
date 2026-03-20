@@ -8,6 +8,7 @@ import Agenda from './pages/Agenda'
 import Relatorios from './pages/Relatorios'
 import Alunos from './pages/Alunos'
 import PerfilAluno from './pages/PerfilAluno'
+import Tarefas from './pages/Tarefas'
 import Financeiro from './pages/Financeiro'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/alunos" element={<Alunos />} />
           <Route path="/alunos/:id" element={<PerfilAluno />} />
+          <Route path="/tarefas" element={<Tarefas />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/relatorios" element={<Relatorios />} />
         </Route>

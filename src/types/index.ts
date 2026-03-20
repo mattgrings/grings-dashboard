@@ -124,6 +124,25 @@ export interface Refeicao {
   alimentos: string[]
 }
 
+// ==================== TAREFAS ====================
+
+export type Prioridade = 'alta' | 'media' | 'baixa'
+export type StatusTarefa = 'a_fazer' | 'em_progresso' | 'concluida' | 'pausada'
+
+export interface Tarefa {
+  id: string
+  titulo: string
+  descricao?: string
+  prioridade: Prioridade
+  progresso: number
+  status: StatusTarefa
+  responsavel?: string
+  prazo?: string
+  tags?: string[]
+  criadoEm: string
+  atualizadoEm: string
+}
+
 // ==================== FINANCEIRO ====================
 
 export type TipoVenda = 'confirmada' | 'sinal' | 'pendente' | 'cancelada'

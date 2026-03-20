@@ -8,6 +8,7 @@ import {
   CalendarBlank,
   ChartBar,
   Barbell,
+  ListChecks,
   CurrencyDollar,
   CaretLeft,
   CaretRight,
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/chamadas', icon: Phone, label: 'Chamadas' },
   { to: '/agenda', icon: CalendarBlank, label: 'Agenda' },
   { to: '/alunos', icon: Barbell, label: 'Alunos' },
+  { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { to: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
 ]
@@ -34,7 +36,7 @@ export default function Sidebar() {
     <motion.aside
       animate={{ width: collapsed ? 72 : 240 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 left-0 h-screen bg-bg-sidebar border-r border-white/5 flex flex-col z-40"
+      className="hidden md:flex fixed top-0 left-0 h-screen bg-bg-sidebar border-r border-white/5 flex-col z-40"
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-white/5">

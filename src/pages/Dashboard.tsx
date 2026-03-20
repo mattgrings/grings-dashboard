@@ -50,7 +50,7 @@ export default function Dashboard() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         <motion.div variants={cardVariants}>
           <KPICard
             icon={<DownloadSimple size={22} weight="duotone" />}

@@ -146,9 +146,9 @@ export default function Financeiro() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="font-display text-3xl text-white tracking-wider">FINANCEIRO</h1>
+      <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 md:gap-4">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <h1 className="font-display text-2xl md:text-3xl text-white tracking-wider">FINANCEIRO</h1>
           <select
             value={mesAtualId}
             onChange={handleMonthChange}
@@ -173,15 +173,16 @@ export default function Financeiro() {
             setEditingVenda(null)
             setModalOpen(true)
           }}
-          className="flex items-center gap-2 bg-[#00E620] text-black font-semibold px-4 py-2.5 rounded-xl hover:bg-[#00E620]/90 transition-colors text-sm"
+          className="flex items-center gap-2 bg-[#00E620] text-black font-semibold px-3 py-2 md:px-4 md:py-2.5 rounded-xl hover:bg-[#00E620]/90 transition-colors text-sm touch-manipulation"
         >
           <Plus size={18} weight="bold" />
-          Nova Venda
+          <span className="hidden sm:inline">Nova Venda</span>
+          <span className="sm:hidden">Venda</span>
         </button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <motion.div variants={cardVariants}>
           <KPICard
             icon={<Coins size={22} weight="duotone" />}
@@ -313,59 +314,102 @@ export default function Financeiro() {
               Nenhuma venda registrada neste mês.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Serviço</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                    <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vendas.map((venda) => {
-                    const badge = tipoBadge[venda.tipo]
-                    return (
-                      <tr
-                        key={venda.id}
-                        className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
-                      >
-                        <td className="px-5 py-3.5 text-white font-medium">{venda.clienteNome}</td>
-                        <td className="px-5 py-3.5 text-gray-400">{venda.servico}</td>
-                        <td className="px-5 py-3.5 text-white font-medium">{formatBRL(venda.valor)}</td>
-                        <td className="px-5 py-3.5">
-                          <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${badge.bg} ${badge.text}`}>
-                            {badge.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-gray-400">
+            <>
+              {/* Mobile card layout */}
+              <div className="md:hidden divide-y divide-white/5">
+                {vendas.map((venda) => {
+                  const badge = tipoBadge[venda.tipo]
+                  return (
+                    <div key={venda.id} className="px-4 py-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-medium text-sm">{venda.clienteNome}</span>
+                        <span className={`inline-flex px-2 py-0.5 rounded-lg text-xs font-medium ${badge.bg} ${badge.text}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-xs">{venda.servico}</span>
+                        <span className="text-white font-medium text-sm">{formatBRL(venda.valor)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 text-xs">
                           {format(parseISO(venda.dataVenda), 'dd/MM/yyyy')}
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEdit(venda)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
-                            >
-                              <PencilSimple size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(venda.id)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                            >
-                              <Trash size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(venda)}
+                            className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors touch-manipulation"
+                          >
+                            <PencilSimple size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(venda.id)}
+                            className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors touch-manipulation"
+                          >
+                            <Trash size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Desktop table layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Serviço</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                      <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vendas.map((venda) => {
+                      const badge = tipoBadge[venda.tipo]
+                      return (
+                        <tr
+                          key={venda.id}
+                          className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                        >
+                          <td className="px-5 py-3.5 text-white font-medium">{venda.clienteNome}</td>
+                          <td className="px-5 py-3.5 text-gray-400">{venda.servico}</td>
+                          <td className="px-5 py-3.5 text-white font-medium">{formatBRL(venda.valor)}</td>
+                          <td className="px-5 py-3.5">
+                            <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${badge.bg} ${badge.text}`}>
+                              {badge.label}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-gray-400">
+                            {format(parseISO(venda.dataVenda), 'dd/MM/yyyy')}
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEdit(venda)}
+                                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+                              >
+                                <PencilSimple size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(venda.id)}
+                                className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                <Trash size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </motion.div>
@@ -399,7 +443,7 @@ export default function Financeiro() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
             style={{ backdropFilter: 'blur(8px)' }}
           >
             <div className="absolute inset-0 bg-black/60" onClick={() => setEditingMeta(false)} />
@@ -408,7 +452,7 @@ export default function Financeiro() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative bg-[#111111] border border-white/10 rounded-2xl p-6 w-full max-w-sm"
+              className="relative bg-[#111111] border border-white/10 rounded-t-2xl md:rounded-2xl p-5 md:p-6 w-full md:max-w-sm"
             >
               <h2 className="font-display text-xl text-white tracking-wider mb-4">EDITAR META</h2>
               <label className="block text-sm text-gray-400 mb-2">Meta do Mês (R$)</label>
@@ -490,7 +534,7 @@ function VendaModal({ venda, onClose, onSave }: VendaModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
       style={{ backdropFilter: 'blur(8px)' }}
     >
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -499,7 +543,7 @@ function VendaModal({ venda, onClose, onSave }: VendaModalProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative bg-[#111111] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="relative bg-[#111111] border border-white/10 rounded-t-2xl md:rounded-2xl p-5 md:p-6 w-full md:max-w-lg max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-xl text-white tracking-wider">

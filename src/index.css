@@ -55,3 +55,31 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(0, 230, 32, 0.15), 0 0 20px rgba(0, 230, 32, 0.1);
   outline: none;
 }
+
+/* Prevent horizontal overflow on mobile */
+html, body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Minimum touch targets */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* iOS safe areas */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+input, select, textarea {
+  font-size: 16px !important;
+}
+@media (min-width: 768px) {
+  input, select, textarea {
+    font-size: inherit !important;
+  }
+}
