@@ -224,8 +224,39 @@ export interface RegistroFrequencia {
   alunoNome: string
   data: string
   hora: string
+  diaSemana?: string
   tipo: TipoFrequencia
   treinoId?: string
+  treinoNome?: string
+  sessaoId?: string
+  duracaoMinutos?: number
+  observacoes?: string
+}
+
+// ==================== SESSÃO DE TREINO ====================
+
+export type StatusSessao = 'ativa' | 'pausada' | 'encerrada'
+
+export interface RegistroCargaSessao {
+  exercicioId: string
+  exercicioNome: string
+  series: SerieRegistrada[]
+}
+
+export interface SessaoTreino {
+  id: string
+  alunoId: string
+  alunoNome: string
+  treinoId: string
+  treinoNome: string
+  dataInicio: string
+  dataFim?: string
+  duracaoSegundos?: number
+  status: StatusSessao
+  exerciciosConcluidos: number
+  totalExercicios: number
+  cargas: RegistroCargaSessao[]
+  sensacao?: 1 | 2 | 3 | 4 | 5
   observacoes?: string
 }
 
