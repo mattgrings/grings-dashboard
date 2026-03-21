@@ -11,11 +11,14 @@ import Alunos from './pages/Alunos'
 import PerfilAluno from './pages/PerfilAluno'
 import Tarefas from './pages/Tarefas'
 import Financeiro from './pages/Financeiro'
+import SocialSelling from './pages/SocialSelling'
+import Frequencia from './pages/Frequencia'
 import AlunoDashboard from './pages/aluno/AlunoDashboard'
 import AlunoTreino from './pages/aluno/AlunoTreino'
 import AlunoDieta from './pages/aluno/AlunoDieta'
 import AlunoEvolucao from './pages/aluno/AlunoEvolucao'
 import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
+import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
 
@@ -40,6 +43,7 @@ export default function App() {
               <Route path="treino" element={<AlunoTreino />} />
               <Route path="dieta" element={<AlunoDieta />} />
               <Route path="evolucao" element={<AlunoEvolucao />} />
+              <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
             </Route>
             {/* Redirect any other path to /aluno */}
@@ -55,8 +59,10 @@ export default function App() {
               <Route path="/agenda" element={<Agenda />} />
               <Route path="/alunos" element={<Alunos />} />
               <Route path="/alunos/:id" element={<PerfilAluno />} />
+              <Route path="/frequencia" element={<Frequencia />} />
               <Route path="/tarefas" element={<Tarefas />} />
               <Route path="/financeiro" element={<Financeiro />} />
+              <Route path="/social" element={<SocialSelling />} />
               <Route path="/relatorios" element={<Relatorios />} />
             </Route>
             {/* Aluno routes also accessible for admin */}
@@ -65,6 +71,7 @@ export default function App() {
               <Route path="treino" element={<AlunoTreino />} />
               <Route path="dieta" element={<AlunoDieta />} />
               <Route path="evolucao" element={<AlunoEvolucao />} />
+              <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
             </Route>
           </>

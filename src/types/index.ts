@@ -167,3 +167,84 @@ export interface MesFinanceiro {
   meta: number
   vendas: Venda[]
 }
+
+// ==================== SOCIAL SELLING ====================
+
+export type PlataformaSocial = 'instagram_feed' | 'instagram_reels' | 'instagram_stories' | 'whatsapp_status' | 'tiktok' | 'youtube_shorts'
+
+export type StatusConteudo = 'ideia' | 'roteiro' | 'gravado' | 'editado' | 'agendado' | 'publicado'
+
+export type CategoriaConteudo = 'transformacao' | 'dica_treino' | 'dica_nutricao' | 'bastidores' | 'depoimento' | 'oferta' | 'motivacional' | 'resultado'
+
+export interface MetricasPost {
+  alcance?: number
+  curtidas?: number
+  comentarios?: number
+  compartilhamentos?: number
+  salvamentos?: number
+  cliquesLink?: number
+  leadsGerados?: number
+}
+
+export interface Conteudo {
+  id: string
+  titulo: string
+  descricao?: string
+  plataforma: PlataformaSocial
+  categoria: CategoriaConteudo
+  status: StatusConteudo
+  roteiro?: string
+  legenda?: string
+  hashtags?: string[]
+  dataPublicacao?: string
+  linkPublicado?: string
+  metricas?: MetricasPost
+  alunoFeatured?: string
+  criadoEm: string
+  atualizadoEm: string
+}
+
+export interface IdeiaPauta {
+  id: string
+  titulo: string
+  descricao?: string
+  plataformas: PlataformaSocial[]
+  categoria: CategoriaConteudo
+  prioridade: Prioridade
+  criadoEm: string
+}
+
+// ==================== FREQUÊNCIA ====================
+
+export type TipoFrequencia = 'presencial' | 'online' | 'faltou' | 'cancelou'
+
+export interface RegistroFrequencia {
+  id: string
+  alunoId: string
+  alunoNome: string
+  data: string
+  hora: string
+  tipo: TipoFrequencia
+  treinoId?: string
+  observacoes?: string
+}
+
+// ==================== CARGAS DO TREINO ====================
+
+export interface SerieRegistrada {
+  numeroSerie: number
+  cargaKg: number
+  repeticoesFeitas: number
+  concluida: boolean
+}
+
+export interface TreinoSemana {
+  id: string
+  exercicioId: string
+  alunoId: string
+  semana: string
+  dataRegistro: string
+  series: SerieRegistrada[]
+  observacoes?: string
+  sensacaoSubjetiva?: 1 | 2 | 3 | 4 | 5
+}

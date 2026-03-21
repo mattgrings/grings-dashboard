@@ -9,6 +9,10 @@ const pageNames: Record<string, string> = {
   '/chamadas': 'Chamadas',
   '/agenda': 'Agenda',
   '/alunos': 'Alunos',
+  '/frequencia': 'Frequência',
+  '/tarefas': 'Tarefas',
+  '/financeiro': 'Financeiro',
+  '/social': 'Social Selling',
   '/relatorios': 'Relatórios',
 }
 

@@ -57,9 +57,14 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Prevent horizontal overflow on mobile */
-html, body {
+html, body, #root {
   overflow-x: hidden;
+  max-width: 100vw;
   -webkit-overflow-scrolling: touch;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* Minimum touch targets */

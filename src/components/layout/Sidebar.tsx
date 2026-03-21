@@ -13,6 +13,8 @@ import {
   CaretLeft,
   CaretRight,
   SignOut,
+  Megaphone,
+  CalendarCheck,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 
@@ -22,8 +24,10 @@ const navItems = [
   { to: '/chamadas', icon: Phone, label: 'Chamadas' },
   { to: '/agenda', icon: CalendarBlank, label: 'Agenda' },
   { to: '/alunos', icon: Barbell, label: 'Alunos' },
+  { to: '/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { to: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
+  { to: '/social', icon: Megaphone, label: 'Social Selling' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
 ]
 

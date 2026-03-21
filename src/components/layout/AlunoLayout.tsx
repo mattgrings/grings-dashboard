@@ -6,7 +6,9 @@ import {
   ForkKnife,
   ChartLineUp,
   Calculator,
+  CalendarCheck,
   SignOut,
+  Plus,
   CloudCheck,
   CloudArrowUp,
   CloudSlash,
@@ -16,12 +18,21 @@ import { useAuthStore } from '../../store/authStore'
 import { useCloudSync } from '../../hooks/useCloudSync'
 import type { SyncStatus } from '../../hooks/useCloudSync'
 
-const alunoNav = [
+const alunoNavDesktop = [
   { path: '/aluno', icon: House, label: 'Inicio', end: true },
   { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
   { path: '/aluno/dieta', icon: ForkKnife, label: 'Dieta' },
-  { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolucao' },
+  { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
+  { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calc' },
+]
+
+const alunoNavMobile: (typeof alunoNavDesktop[number] | null)[] = [
+  { path: '/aluno', icon: House, label: 'Início', end: true },
+  { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
+  null, // FAB
+  { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
+  { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Freq.' },
 ]
 
 const syncIcons: Record<SyncStatus, { icon: typeof CloudCheck; color: string; label: string }> = {
@@ -79,7 +90,7 @@ export default function AlunoLayout() {
 
       {/* Desktop Top Nav */}
       <nav className="hidden md:flex sticky top-16 z-30 bg-[#111111] border-b border-white/5 px-6">
-        {alunoNav.map((item) => (
+        {alunoNavDesktop.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -109,31 +120,45 @@ export default function AlunoLayout() {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        {alunoNav.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.end}
-            className={({ isActive }) =>
-              `relative flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-medium transition-all touch-manipulation ${
-                isActive ? 'text-[#00E620]' : 'text-gray-500'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon size={22} weight={isActive ? 'fill' : 'regular'} />
-                <span>{item.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="aluno-bottom-indicator"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#00E620] rounded-full"
-                  />
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
+        {alunoNavMobile.map((item, i) => {
+          if (!item) {
+            return (
+              <div key="fab" className="relative flex-1 flex items-center justify-center">
+                <NavLink
+                  to="/aluno/dieta"
+                  className="absolute -top-5 w-12 h-12 rounded-full bg-[#00E620] flex items-center justify-center shadow-[0_0_20px_rgba(0,230,32,0.4)] active:scale-90 transition-transform touch-manipulation"
+                >
+                  <ForkKnife size={24} weight="bold" className="text-black" />
+                </NavLink>
+              </div>
+            )
+          }
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.end}
+              className={({ isActive }) =>
+                `relative flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-medium transition-all touch-manipulation ${
+                  isActive ? 'text-[#00E620]' : 'text-gray-500'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={22} weight={isActive ? 'fill' : 'regular'} />
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="aluno-bottom-indicator"
+                      className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#00E620] rounded-full"
+                    />
+                  )}
+                </>
+              )}
+            </NavLink>
+          )
+        })}
       </nav>
     </div>
   )
