@@ -8,7 +8,6 @@ import {
   Calculator,
   CalendarCheck,
   SignOut,
-  Plus,
   CloudCheck,
   CloudArrowUp,
   CloudSlash,
@@ -120,7 +119,7 @@ export default function AlunoLayout() {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        {alunoNavMobile.map((item, i) => {
+        {alunoNavMobile.map((item) => {
           if (!item) {
             return (
               <div key="fab" className="relative flex-1 flex items-center justify-center">

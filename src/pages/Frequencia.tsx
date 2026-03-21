@@ -7,7 +7,6 @@ import {
   Warning,
   WhatsappLogo,
   Plus,
-  UserCircle,
   Fire,
 } from '@phosphor-icons/react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday, isSameMonth } from 'date-fns'
@@ -340,7 +339,7 @@ function FrequenciaCalendario() {
 
 // ==================== REGISTRO MODAL ====================
 
-function RegistroModal({ alunos, onClose }: { alunos: { id: string; nome: string }[]; onClose: () => void }) {
+function RegistroModal({ alunos, onClose }: { alunos: { id: string; nome: string; status: string }[]; onClose: () => void }) {
   const { addRegistro } = useFrequenciaStore()
   const [alunoId, setAlunoId] = useState('')
   const [data, setData] = useState(format(new Date(), 'yyyy-MM-dd'))

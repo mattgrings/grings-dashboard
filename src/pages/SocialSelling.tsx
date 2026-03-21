@@ -11,7 +11,6 @@ import {
   Heart,
   ChatCircle,
   Eye,
-  Link as LinkIcon,
   Funnel,
   ChartBar,
   CalendarBlank,
@@ -20,7 +19,7 @@ import {
   ArrowRight,
   Trash,
 } from '@phosphor-icons/react'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, parseISO } from 'date-fns'
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useSocialStore } from '../store/socialStore'
 import type { Conteudo, StatusConteudo, PlataformaSocial, CategoriaConteudo, IdeiaPauta } from '../types'
@@ -350,7 +349,6 @@ function MetricasView({ conteudos }: { conteudos: Conteudo[] }) {
 
   const totalAlcance = publicados.reduce((acc, c) => acc + (c.metricas?.alcance ?? 0), 0)
   const totalCurtidas = publicados.reduce((acc, c) => acc + (c.metricas?.curtidas ?? 0), 0)
-  const totalComentarios = publicados.reduce((acc, c) => acc + (c.metricas?.comentarios ?? 0), 0)
   const totalLeads = publicados.reduce((acc, c) => acc + (c.metricas?.leadsGerados ?? 0), 0)
 
   const melhorPost = publicados.sort((a, b) => (b.metricas?.alcance ?? 0) - (a.metricas?.alcance ?? 0))[0]

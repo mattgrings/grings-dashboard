@@ -13,7 +13,7 @@ const navItems = [
 export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-      {navItems.map((item, i) => {
+      {navItems.map((item) => {
         if (!item) {
           // FAB central
           return (

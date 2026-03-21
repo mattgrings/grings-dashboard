@@ -24,7 +24,6 @@ export default function AlunoFrequencia() {
 
   const meusRegistros = registros.filter((r) => r.alunoId === alunoId)
   const presencas = meusRegistros.filter((r) => r.tipo === 'presencial' || r.tipo === 'online').length
-  const faltas = meusRegistros.filter((r) => r.tipo === 'faltou').length
   const total = meusRegistros.length
 
   // Streak

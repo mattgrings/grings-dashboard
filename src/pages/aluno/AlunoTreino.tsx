@@ -8,7 +8,6 @@ import {
   ChartLine,
   CaretDown,
   ClockCounterClockwise,
-  YoutubeLogo,
 } from '@phosphor-icons/react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAlunosStore } from '../../store/alunosStore'
