@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { SessaoTreino, RegistroCargaSessao, SerieRegistrada } from '../types'
+import type { SessaoTreino, SerieRegistrada } from '../types'
 import { jsonStorage } from '../lib/storage'
 import { useFrequenciaStore } from './frequenciaStore'
 
