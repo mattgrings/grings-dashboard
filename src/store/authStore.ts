@@ -45,10 +45,22 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       login: (email, senha) => {
-        const found = get().users.find(
+        // Check persisted users first, then fallback to defaults
+        const allUsers = [
+          ...get().users,
+          defaultAdmin,
+          ...defaultAlunos,
+        ]
+        const found = allUsers.find(
           (u) => u.email === email && u.senha === senha
         )
         if (!found) return false
+
+        // Ensure this user is in the persisted list
+        const currentUsers = get().users
+        if (!currentUsers.some((u) => u.id === found.id)) {
+          set((s) => ({ users: [...s.users, found] }))
+        }
 
         const { senha: _, ...userWithoutSenha } = found
         set({ user: userWithoutSenha, isAuthenticated: true })
@@ -79,6 +91,23 @@ export const useAuthStore = create<AuthState>()(
         users: state.users,
         isAuthenticated: state.isAuthenticated,
       }),
+      merge: (persisted, current) => {
+        const p = persisted as Partial<AuthState> | undefined
+        const persistedUsers = p?.users ?? []
+        const allDefaults = [defaultAdmin, ...defaultAlunos]
+        // Ensure default users always exist (merge with any registered users)
+        const merged = [...allDefaults]
+        for (const u of persistedUsers) {
+          if (!merged.some((m) => m.id === u.id)) {
+            merged.push(u)
+          }
+        }
+        return {
+          ...current,
+          ...p,
+          users: merged,
+        }
+      },
     }
   )
 )
