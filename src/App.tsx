@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ToastProvider } from './components/ui/Toast'
+import ScrollRestoration from './components/ui/ScrollRestoration'
 import Layout from './components/layout/Layout'
 import AlunoLayout from './components/layout/AlunoLayout'
 import Dashboard from './pages/Dashboard'
@@ -12,6 +13,7 @@ import Financeiro from './pages/Financeiro'
 import SocialSelling from './pages/SocialSelling'
 import Frequencia from './pages/Frequencia'
 import Feedbacks from './pages/Feedbacks'
+import Treinos from './pages/Treinos'
 import Configuracoes from './pages/Configuracoes'
 import AlunoDashboard from './pages/aluno/AlunoDashboard'
 import AlunoTreino from './pages/aluno/AlunoTreino'
@@ -41,6 +43,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <ScrollRestoration />
       <InstallPrompt />
       <Routes>
         {isAluno ? (
@@ -71,6 +74,7 @@ export default function App() {
               <Route path="/social" element={<SocialSelling />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/feedbacks" element={<Feedbacks />} />
+              <Route path="/treinos" element={<Treinos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
             {/* Aluno routes also accessible for admin */}

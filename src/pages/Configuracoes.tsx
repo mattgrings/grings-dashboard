@@ -15,8 +15,9 @@ import {
   Trash,
   CloudCheck,
 } from '@phosphor-icons/react'
-import Logo from '../components/ui/Logo'
 import InputGlow from '../components/ui/InputGlow'
+import FotoPerfilUpload from '../components/ui/FotoPerfilUpload'
+import GradienteHeader from '../components/ui/GradienteHeader'
 import { useAuthStore } from '../store/authStore'
 
 type Aba = 'perfil' | 'contas' | 'notificacoes' | 'banco' | 'perigo'
@@ -46,9 +47,12 @@ function AbaPerfilAdmin() {
   return (
     <div className="space-y-6 max-w-lg">
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-[#00E620]/10 flex items-center justify-center text-[#00E620] text-xl font-bold">
-          {user?.nome?.slice(0, 2).toUpperCase() ?? 'GT'}
-        </div>
+        <FotoPerfilUpload
+          fotoAtual={user?.avatar}
+          nome={user?.nome ?? 'Admin'}
+          tamanho="lg"
+          onFotoSelecionada={() => {}}
+        />
         <div>
           <h3 className="text-white font-bold">{user?.nome}</h3>
           <p className="text-gray-500 text-sm">{user?.email}</p>
@@ -355,13 +359,11 @@ export default function Configuracoes() {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
-      <div className="flex items-center gap-3">
-        <Logo size="sm" />
-        <div>
-          <h1 className="text-2xl font-bold text-white">Configurações</h1>
-          <p className="text-gray-500 text-sm">Gerencie sua plataforma</p>
-        </div>
-      </div>
+      <GradienteHeader
+        icone={Gear}
+        titulo="Configurações"
+        subtitulo="Gerencie sua plataforma"
+      />
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">

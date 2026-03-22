@@ -15,13 +15,15 @@ import {
   ChatText,
   Gear,
   Funnel,
+  Users,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
 
 const navItems = [
   { to: '/', icon: ChartLineUp, label: 'Dashboard' },
-  { to: '/alunos', icon: Barbell, label: 'Alunos' },
+  { to: '/alunos', icon: Users, label: 'Alunos' },
+  { to: '/treinos', icon: Barbell, label: 'Treinos' },
   { to: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
   { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { to: '/frequencia', icon: CalendarCheck, label: 'Frequência' },

@@ -6,6 +6,7 @@ import {
   X,
   House,
   Barbell,
+  Users,
   CurrencyDollar,
   ListChecks,
   CalendarCheck,
@@ -24,7 +25,8 @@ import Logo from '../ui/Logo'
 
 const adminNav = [
   { path: '/', icon: House, label: 'Dashboard', end: true },
-  { path: '/alunos', icon: Barbell, label: 'Alunos' },
+  { path: '/alunos', icon: Users, label: 'Alunos' },
+  { path: '/treinos', icon: Barbell, label: 'Treinos' },
   { path: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
   { path: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { path: '/frequencia', icon: CalendarCheck, label: 'Frequência' },

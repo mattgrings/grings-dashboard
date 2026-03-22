@@ -5,6 +5,7 @@ import {
   UsersThree,
   Barbell,
   CurrencyDollar,
+  ChartLineUp,
 } from '@phosphor-icons/react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { useLeadsStore } from '../store/leadsStore'
@@ -14,6 +15,7 @@ import { useFeedbackStore } from '../store/feedbackStore'
 import KPICard from '../components/dashboard/KPICard'
 import CaptacaoChart from '../components/dashboard/CaptacaoChart'
 import RecentLeads from '../components/dashboard/RecentLeads'
+import GradienteHeader from '../components/ui/GradienteHeader'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -70,6 +72,12 @@ export default function Dashboard() {
       animate="show"
       className="space-y-6"
     >
+      <GradienteHeader
+        icone={ChartLineUp}
+        titulo="Dashboard"
+        subtitulo="Visão geral do seu negócio"
+      />
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         <motion.div variants={cardVariants}>

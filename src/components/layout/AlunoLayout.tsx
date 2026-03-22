@@ -1,5 +1,4 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import {
   House,
   Barbell,
@@ -28,13 +27,6 @@ const alunoNavDesktop = [
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calc' },
-  { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
-]
-
-const alunoNavMobile = [
-  { path: '/aluno', icon: House, label: 'Início', end: true },
-  { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
-  { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
 ]
 
@@ -125,10 +117,7 @@ export default function AlunoLayout() {
           >
             {({ isActive }) => (
               <>
-                <item.icon
-                  size={18}
-                  weight={isActive ? 'fill' : 'regular'}
-                />
+                <item.icon size={18} weight={isActive ? 'fill' : 'regular'} />
                 <span>{item.label}</span>
               </>
             )}
@@ -137,41 +126,9 @@ export default function AlunoLayout() {
       </nav>
 
       {/* Main Content */}
-      <main className="p-4 md:p-6 pb-24 md:pb-6 relative z-10">
+      <main className="p-4 md:p-6 pb-28 md:pb-6 relative z-10">
         <Outlet />
       </main>
-
-      {/* Mobile Bottom Nav - simplified, 4 items */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        {alunoNavMobile.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.end}
-            className={({ isActive }) =>
-              `relative flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-medium transition-all touch-manipulation ${
-                isActive ? 'text-[#00E620]' : 'text-gray-500'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon
-                  size={22}
-                  weight={isActive ? 'fill' : 'regular'}
-                />
-                <span>{item.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="aluno-bottom-indicator"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#00E620] rounded-full"
-                  />
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
 
       {/* Floating Menu Button - mobile only */}
       <FloatingMenuButton />
