@@ -1,6 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { House, Users, CurrencyDollar, ListChecks, Plus } from '@phosphor-icons/react'
+import {
+  House,
+  Users,
+  CurrencyDollar,
+  ListChecks,
+  Plus,
+} from '@phosphor-icons/react'
 
 const navItems = [
   { path: '/', icon: House, label: 'Início' },
@@ -15,15 +21,14 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
       {navItems.map((item) => {
         if (!item) {
-          // FAB central
           return (
-            <div key="fab" className="relative flex-1 flex items-center justify-center">
-              <NavLink
-                to="/agenda"
-                className="absolute -top-5 w-12 h-12 rounded-full bg-[#00E620] flex items-center justify-center shadow-[0_0_20px_rgba(0,230,32,0.4)] active:scale-90 transition-transform touch-manipulation"
-              >
+            <div
+              key="fab"
+              className="relative flex-1 flex items-center justify-center"
+            >
+              <div className="absolute -top-5 w-12 h-12 rounded-full bg-[#00E620] flex items-center justify-center shadow-[0_0_20px_rgba(0,230,32,0.4)]">
                 <Plus size={24} weight="bold" className="text-black" />
-              </NavLink>
+              </div>
             </div>
           )
         }
@@ -41,7 +46,10 @@ export default function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                <item.icon size={22} weight={isActive ? 'fill' : 'regular'} />
+                <item.icon
+                  size={22}
+                  weight={isActive ? 'fill' : 'regular'}
+                />
                 <span>{item.label}</span>
                 {isActive && (
                   <motion.div

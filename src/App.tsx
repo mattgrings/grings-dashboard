@@ -4,8 +4,6 @@ import Layout from './components/layout/Layout'
 import AlunoLayout from './components/layout/AlunoLayout'
 import Dashboard from './pages/Dashboard'
 import Captacoes from './pages/Captacoes'
-import Chamadas from './pages/Chamadas'
-import Agenda from './pages/Agenda'
 import Relatorios from './pages/Relatorios'
 import Alunos from './pages/Alunos'
 import PerfilAluno from './pages/PerfilAluno'
@@ -13,12 +11,15 @@ import Tarefas from './pages/Tarefas'
 import Financeiro from './pages/Financeiro'
 import SocialSelling from './pages/SocialSelling'
 import Frequencia from './pages/Frequencia'
+import Feedbacks from './pages/Feedbacks'
+import Configuracoes from './pages/Configuracoes'
 import AlunoDashboard from './pages/aluno/AlunoDashboard'
 import AlunoTreino from './pages/aluno/AlunoTreino'
 import AlunoDieta from './pages/aluno/AlunoDieta'
 import AlunoEvolucao from './pages/aluno/AlunoEvolucao'
 import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
 import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
+import AlunoFeedback from './pages/aluno/AlunoFeedback'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
 
@@ -45,8 +46,8 @@ export default function App() {
               <Route path="evolucao" element={<AlunoEvolucao />} />
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
+              <Route path="feedback" element={<AlunoFeedback />} />
             </Route>
-            {/* Redirect any other path to /aluno */}
             <Route path="*" element={<Navigate to="/aluno" replace />} />
           </>
         ) : (
@@ -55,8 +56,6 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/captacoes" element={<Captacoes />} />
-              <Route path="/chamadas" element={<Chamadas />} />
-              <Route path="/agenda" element={<Agenda />} />
               <Route path="/alunos" element={<Alunos />} />
               <Route path="/alunos/:id" element={<PerfilAluno />} />
               <Route path="/frequencia" element={<Frequencia />} />
@@ -64,6 +63,8 @@ export default function App() {
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/social" element={<SocialSelling />} />
               <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/feedbacks" element={<Feedbacks />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
             {/* Aluno routes also accessible for admin */}
             <Route path="/aluno" element={<AlunoLayout />}>
@@ -73,6 +74,7 @@ export default function App() {
               <Route path="evolucao" element={<AlunoEvolucao />} />
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
+              <Route path="feedback" element={<AlunoFeedback />} />
             </Route>
           </>
         )}

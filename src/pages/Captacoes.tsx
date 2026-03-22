@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, MagnifyingGlass, FunnelSimple } from '@phosphor-icons/react'
 import { useLeadsStore } from '../store/leadsStore'
-import { useChamadasStore } from '../store/chamadasStore'
 import { useToast } from '../components/ui/Toast'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -12,7 +11,6 @@ import type { Lead, OrigemLead, StatusLead } from '../types'
 
 export default function Captacoes() {
   const leads = useLeadsStore((s) => s.leads)
-  const addChamada = useChamadasStore((s) => s.addChamada)
   const updateLead = useLeadsStore((s) => s.updateLead)
   const { showToast } = useToast()
 
@@ -50,16 +48,8 @@ export default function Captacoes() {
     e.preventDefault()
     if (!selectedLead || !scheduleDate || !scheduleTime) return
 
-    const dataHora = new Date(`${scheduleDate}T${scheduleTime}`)
-    addChamada({
-      leadId: selectedLead.id,
-      dataHora,
-      duracao: parseInt(scheduleDuration),
-      status: 'agendada',
-      notas: scheduleNotes || undefined,
-    })
     updateLead(selectedLead.id, { status: 'agendado' })
-    showToast(`Chamada agendada com ${selectedLead.nome}!`)
+    showToast(`Contato agendado com ${selectedLead.nome}!`)
     setShowSchedule(false)
     setSelectedLead(null)
     setScheduleDate('')

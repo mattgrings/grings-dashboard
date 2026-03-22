@@ -4,8 +4,6 @@ import { motion } from 'framer-motion'
 import {
   ChartLineUp,
   UserPlus,
-  Phone,
-  CalendarBlank,
   ChartBar,
   Barbell,
   ListChecks,
@@ -15,20 +13,23 @@ import {
   SignOut,
   Megaphone,
   CalendarCheck,
+  ChatText,
+  Gear,
+  Funnel,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
+import Logo from '../ui/Logo'
 
 const navItems = [
   { to: '/', icon: ChartLineUp, label: 'Dashboard' },
-  { to: '/captacoes', icon: UserPlus, label: 'Captações' },
-  { to: '/chamadas', icon: Phone, label: 'Chamadas' },
-  { to: '/agenda', icon: CalendarBlank, label: 'Agenda' },
   { to: '/alunos', icon: Barbell, label: 'Alunos' },
-  { to: '/frequencia', icon: CalendarCheck, label: 'Frequência' },
-  { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { to: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
-  { to: '/social', icon: Megaphone, label: 'Social Selling' },
+  { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
+  { to: '/frequencia', icon: CalendarCheck, label: 'Frequência' },
+  { to: '/social', icon: Megaphone, label: 'Social' },
+  { to: '/captacoes', icon: Funnel, label: 'Captações' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
+  { to: '/feedbacks', icon: ChatText, label: 'Feedbacks' },
 ]
 
 export default function Sidebar() {
@@ -44,7 +45,7 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-white/5">
-        <img src="/logo.png" alt="Grings Team" className="w-9 h-9 rounded-lg object-contain" />
+        <Logo size="sm" />
         {!collapsed && (
           <motion.span
             initial={{ opacity: 0 }}
@@ -57,7 +58,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1">
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -80,14 +81,46 @@ export default function Sidebar() {
                     transition={{ duration: 0.2 }}
                   />
                 )}
-                <item.icon size={20} weight={isActive ? 'fill' : 'regular'} className="relative z-10 shrink-0" />
+                <item.icon
+                  size={20}
+                  weight={isActive ? 'fill' : 'regular'}
+                  className="relative z-10 shrink-0"
+                />
                 {!collapsed && (
-                  <span className="relative z-10 whitespace-nowrap">{item.label}</span>
+                  <span className="relative z-10 whitespace-nowrap">
+                    {item.label}
+                  </span>
                 )}
               </>
             )}
           </NavLink>
         ))}
+
+        {/* Separator */}
+        <div className="h-px bg-white/5 my-2" />
+
+        {/* Configurações */}
+        <NavLink
+          to="/configuracoes"
+          className={({ isActive }) =>
+            `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? 'bg-brand-green text-black shadow-glow-green-sm'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <Gear
+                size={20}
+                weight={isActive ? 'fill' : 'regular'}
+                className="shrink-0"
+              />
+              {!collapsed && <span className="whitespace-nowrap">Configurações</span>}
+            </>
+          )}
+        </NavLink>
       </nav>
 
       {/* User / Collapse */}
@@ -98,8 +131,12 @@ export default function Sidebar() {
               {user?.nome?.slice(0, 2).toUpperCase() ?? 'GT'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium truncate">{user?.nome ?? 'Usuário'}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.role === 'admin' ? 'Administrador' : 'Aluno'}</p>
+              <p className="text-sm text-white font-medium truncate">
+                {user?.nome ?? 'Usuário'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.role === 'admin' ? 'Administrador' : 'Aluno'}
+              </p>
             </div>
             <button
               onClick={logout}

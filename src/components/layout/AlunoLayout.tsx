@@ -3,19 +3,22 @@ import { motion } from 'framer-motion'
 import {
   House,
   Barbell,
-  ForkKnife,
   ChartLineUp,
-  Calculator,
   CalendarCheck,
+  ChatText,
   SignOut,
   CloudCheck,
   CloudArrowUp,
   CloudSlash,
   Warning,
+  ForkKnife,
+  Calculator,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import { useCloudSync } from '../../hooks/useCloudSync'
 import type { SyncStatus } from '../../hooks/useCloudSync'
+import Logo from '../ui/Logo'
+import GreenLedBackground from '../ui/GreenLedBackground'
 
 const alunoNavDesktop = [
   { path: '/aluno', icon: House, label: 'Inicio', end: true },
@@ -24,6 +27,7 @@ const alunoNavDesktop = [
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calc' },
+  { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
 ]
 
 const alunoNavMobile: (typeof alunoNavDesktop[number] | null)[] = [
@@ -31,12 +35,23 @@ const alunoNavMobile: (typeof alunoNavDesktop[number] | null)[] = [
   { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
   null, // FAB
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
-  { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Freq.' },
+  { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
 ]
 
-const syncIcons: Record<SyncStatus, { icon: typeof CloudCheck; color: string; label: string }> = {
-  synced: { icon: CloudCheck, color: 'text-[#00E620]', label: 'Sincronizado' },
-  syncing: { icon: CloudArrowUp, color: 'text-yellow-400 animate-pulse', label: 'Sincronizando...' },
+const syncIcons: Record<
+  SyncStatus,
+  { icon: typeof CloudCheck; color: string; label: string }
+> = {
+  synced: {
+    icon: CloudCheck,
+    color: 'text-[#00E620]',
+    label: 'Sincronizado',
+  },
+  syncing: {
+    icon: CloudArrowUp,
+    color: 'text-yellow-400 animate-pulse',
+    label: 'Sincronizando...',
+  },
   offline: { icon: CloudSlash, color: 'text-gray-500', label: 'Offline' },
   error: { icon: Warning, color: 'text-red-400', label: 'Erro de sync' },
 }
@@ -55,12 +70,16 @@ export default function AlunoLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A] relative">
+      <GreenLedBackground />
+
       {/* Header */}
-      <header className="sticky top-0 z-40 h-14 md:h-16 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-6">
+      <header className="sticky top-0 z-40 h-14 md:h-16 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-6 relative">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Grings Team" className="w-8 h-8 rounded-lg object-contain" />
-          <span className="font-display text-lg text-white tracking-wider hidden sm:block">GRINGS TEAM</span>
+          <Logo size="sm" />
+          <span className="font-display text-lg text-white tracking-wider hidden sm:block">
+            GRINGS TEAM
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -75,7 +94,9 @@ export default function AlunoLayout() {
             <div className="w-8 h-8 rounded-full bg-[#00E620]/20 flex items-center justify-center text-[#00E620] text-xs font-bold">
               {user?.nome?.slice(0, 2).toUpperCase() ?? 'AL'}
             </div>
-            <span className="text-sm text-white font-medium hidden sm:block">{user?.nome ?? 'Aluno'}</span>
+            <span className="text-sm text-white font-medium hidden sm:block">
+              {user?.nome ?? 'Aluno'}
+            </span>
           </div>
           <button
             onClick={handleLogout}
@@ -88,7 +109,7 @@ export default function AlunoLayout() {
       </header>
 
       {/* Desktop Top Nav */}
-      <nav className="hidden md:flex sticky top-16 z-30 bg-[#111111] border-b border-white/5 px-6">
+      <nav className="hidden md:flex sticky top-16 z-30 bg-[#111111]/80 backdrop-blur-xl border-b border-white/5 px-6 relative">
         {alunoNavDesktop.map((item) => (
           <NavLink
             key={item.path}
@@ -104,7 +125,10 @@ export default function AlunoLayout() {
           >
             {({ isActive }) => (
               <>
-                <item.icon size={18} weight={isActive ? 'fill' : 'regular'} />
+                <item.icon
+                  size={18}
+                  weight={isActive ? 'fill' : 'regular'}
+                />
                 <span>{item.label}</span>
               </>
             )}
@@ -113,7 +137,7 @@ export default function AlunoLayout() {
       </nav>
 
       {/* Main Content */}
-      <main className="p-4 md:p-6 pb-20 md:pb-6">
+      <main className="p-4 md:p-6 pb-20 md:pb-6 relative z-10">
         <Outlet />
       </main>
 
@@ -122,12 +146,19 @@ export default function AlunoLayout() {
         {alunoNavMobile.map((item) => {
           if (!item) {
             return (
-              <div key="fab" className="relative flex-1 flex items-center justify-center">
+              <div
+                key="fab"
+                className="relative flex-1 flex items-center justify-center"
+              >
                 <NavLink
                   to="/aluno/dieta"
                   className="absolute -top-5 w-12 h-12 rounded-full bg-[#00E620] flex items-center justify-center shadow-[0_0_20px_rgba(0,230,32,0.4)] active:scale-90 transition-transform touch-manipulation"
                 >
-                  <ForkKnife size={24} weight="bold" className="text-black" />
+                  <ForkKnife
+                    size={24}
+                    weight="bold"
+                    className="text-black"
+                  />
                 </NavLink>
               </div>
             )
@@ -145,7 +176,10 @@ export default function AlunoLayout() {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={22} weight={isActive ? 'fill' : 'regular'} />
+                  <item.icon
+                    size={22}
+                    weight={isActive ? 'fill' : 'regular'}
+                  />
                   <span>{item.label}</span>
                   {isActive && (
                     <motion.div

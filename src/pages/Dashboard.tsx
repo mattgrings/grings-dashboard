@@ -1,11 +1,18 @@
 import { motion } from 'framer-motion'
-import { DownloadSimple, Phone, CheckCircle, Percent, UsersThree } from '@phosphor-icons/react'
+import {
+  DownloadSimple,
+  Percent,
+  UsersThree,
+  Barbell,
+  CurrencyDollar,
+} from '@phosphor-icons/react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { useLeadsStore } from '../store/leadsStore'
-import { useChamadasStore } from '../store/chamadasStore'
+import { useAlunosStore } from '../store/alunosStore'
+import { useFinanceiroStore } from '../store/financeiroStore'
+import { useFeedbackStore } from '../store/feedbackStore'
 import KPICard from '../components/dashboard/KPICard'
 import CaptacaoChart from '../components/dashboard/CaptacaoChart'
-import ChamadasTimeline from '../components/dashboard/ChamadasTimeline'
 import RecentLeads from '../components/dashboard/RecentLeads'
 
 const containerVariants = {
@@ -15,7 +22,12 @@ const containerVariants = {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.97 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 300, damping: 25 },
+  },
 }
 
 const origemData = [
@@ -28,7 +40,9 @@ const origemData = [
 
 export default function Dashboard() {
   const leads = useLeadsStore((s) => s.leads)
-  const chamadas = useChamadasStore((s) => s.chamadas)
+  const alunos = useAlunosStore((s) => s.alunos)
+  const meses = useFinanceiroStore((s) => s.meses)
+  const naoLidosFeedback = useFeedbackStore((s) => s.getNaoLidos())
 
   const today = new Date()
   const todayLeads = leads.filter((l) => {
@@ -36,19 +50,26 @@ export default function Dashboard() {
     return d.toDateString() === today.toDateString()
   })
 
-  const todayChamadas = chamadas.filter((c) => {
-    const d = new Date(c.dataHora)
-    return d.toDateString() === today.toDateString() && c.status === 'agendada'
-  })
-
-  const realizadas = chamadas.filter((c) => c.status === 'realizada')
   const convertidos = leads.filter((l) => l.status === 'convertido')
   const activeLeads = leads.filter((l) => l.status !== 'perdido')
+  const alunosAtivos = alunos.filter((a) => a.status === 'ativo')
+  const taxaConversao =
+    leads.length > 0 ? (convertidos.length / leads.length) * 100 : 0
 
-  const taxaConversao = leads.length > 0 ? (convertidos.length / leads.length) * 100 : 0
+  // Current month revenue
+  const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+  const mesAtual = meses.find((m) => m.mes === currentMonth)
+  const receitaMes = mesAtual
+    ? mesAtual.vendas.reduce((sum, v) => sum + v.valor, 0)
+    : 0
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6"
+    >
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         <motion.div variants={cardVariants}>
@@ -62,20 +83,21 @@ export default function Dashboard() {
         </motion.div>
         <motion.div variants={cardVariants}>
           <KPICard
-            icon={<Phone size={22} weight="duotone" />}
-            label="Chamadas Hoje"
-            value={todayChamadas.length}
+            icon={<Barbell size={22} weight="duotone" />}
+            label="Alunos Ativos"
+            value={alunosAtivos.length}
             change={5}
-            changeLabel="agendadas"
+            changeLabel="este mês"
           />
         </motion.div>
         <motion.div variants={cardVariants}>
           <KPICard
-            icon={<CheckCircle size={22} weight="duotone" />}
-            label="Chamadas Realizadas"
-            value={realizadas.length}
+            icon={<CurrencyDollar size={22} weight="duotone" />}
+            label="Receita do Mês"
+            value={receitaMes}
+            prefix="R$"
             change={8}
-            changeLabel="esta semana"
+            changeLabel="vs mês anterior"
           />
         </motion.div>
         <motion.div variants={cardVariants}>
@@ -105,7 +127,9 @@ export default function Dashboard() {
         </motion.div>
         <motion.div variants={cardVariants}>
           <div className="bg-surface/50 backdrop-blur-md border border-white/5 rounded-card p-5 h-full">
-            <h3 className="text-sm font-medium text-gray-400 mb-4">Origem dos Leads</h3>
+            <h3 className="text-sm font-medium text-gray-400 mb-4">
+              Origem dos Leads
+            </h3>
             <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -137,9 +161,15 @@ export default function Dashboard() {
             </div>
             <div className="space-y-1.5 mt-2">
               {origemData.map((item) => (
-                <div key={item.name} className="flex items-center justify-between text-xs">
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between text-xs"
+                >
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
                     <span className="text-gray-400">{item.name}</span>
                   </div>
                   <span className="text-white font-medium">{item.value}%</span>
@@ -150,10 +180,30 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Chamadas Chart + Recent */}
-      <motion.div variants={cardVariants}>
-        <ChamadasTimeline />
-      </motion.div>
+      {/* Feedbacks badge */}
+      {naoLidosFeedback > 0 && (
+        <motion.div
+          variants={cardVariants}
+          className="bg-[#00E620]/5 border border-[#00E620]/20 rounded-2xl p-4
+                     flex items-center justify-between"
+        >
+          <div>
+            <p className="text-white font-medium text-sm">
+              Novos feedbacks de alunos
+            </p>
+            <p className="text-gray-400 text-xs">
+              {naoLidosFeedback} feedback(s) aguardando leitura
+            </p>
+          </div>
+          <a
+            href="/feedbacks"
+            className="px-4 py-2 bg-[#00E620]/10 text-[#00E620] rounded-xl text-sm
+                       font-medium hover:bg-[#00E620]/20 transition-colors"
+          >
+            Ver feedbacks
+          </a>
+        </motion.div>
+      )}
 
       <motion.div variants={cardVariants}>
         <RecentLeads />
