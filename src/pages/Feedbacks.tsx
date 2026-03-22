@@ -97,9 +97,9 @@ export default function Feedbacks() {
       {/* List */}
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<ChatText size={48} />}
-          title="Nenhum feedback"
-          description={
+          icon={ChatText}
+          titulo="Nenhum feedback"
+          descricao={
             filtro === 'nao_lidos'
               ? 'Todos os feedbacks foram lidos!'
               : 'Quando alunos finalizarem treinos, seus feedbacks aparecerão aqui.'

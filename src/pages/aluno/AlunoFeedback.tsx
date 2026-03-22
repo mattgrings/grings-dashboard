@@ -165,9 +165,9 @@ export default function AlunoFeedback() {
         <h3 className="text-white font-medium mb-3">Histórico</h3>
         {meusFeedbacks.length === 0 ? (
           <EmptyState
-            icon={<ChatText size={40} />}
-            title="Nenhum feedback enviado"
-            description="Seus feedbacks anteriores aparecerão aqui"
+            icon={ChatText}
+            titulo="Nenhum feedback enviado"
+            descricao="Seus feedbacks anteriores aparecerão aqui"
           />
         ) : (
           <div className="space-y-2">
