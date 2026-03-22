@@ -73,10 +73,25 @@ html, body, #root {
 }
 
 /* iOS safe areas */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
 @supports (padding: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Dynamic viewport height */
+html, body, #root {
+  min-height: 100dvh;
 }
 
 /* Prevent iOS zoom on input focus */

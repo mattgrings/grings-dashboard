@@ -69,6 +69,12 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         set({ user: null, isAuthenticated: false })
+        // Clear auth data from localStorage
+        try {
+          localStorage.removeItem('grings-auth')
+        } catch {
+          // ignore
+        }
       },
 
       register: (data) => {

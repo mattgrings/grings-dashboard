@@ -43,8 +43,8 @@ export default function Sidebar() {
       className="hidden md:flex fixed top-0 left-0 h-screen bg-bg-sidebar border-r border-white/5 flex-col z-40"
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-white/5">
-        <Logo size="sm" />
+      <div className="flex items-center gap-3 px-4 h-20 border-b border-white/5">
+        <Logo size={collapsed ? 'sm' : 'md'} />
         {!collapsed && (
           <motion.span
             initial={{ opacity: 0 }}
@@ -137,24 +137,20 @@ export default function Sidebar() {
                 {user?.role === 'admin' ? 'Administrador' : 'Aluno'}
               </p>
             </div>
-            <button
-              onClick={logout}
-              title="Sair"
-              className="text-gray-500 hover:text-red-400 transition-colors"
-            >
-              <SignOut size={18} />
-            </button>
           </div>
         )}
-        {collapsed && (
-          <button
-            onClick={logout}
-            title="Sair"
-            className="w-full flex items-center justify-center px-3 py-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors"
-          >
-            <SignOut size={16} />
-          </button>
-        )}
+
+        {/* Explicit logout button */}
+        <button
+          onClick={logout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-400/10 transition-colors ${
+            collapsed ? 'justify-center' : ''
+          }`}
+        >
+          <SignOut size={18} />
+          {!collapsed && <span>Sair da conta</span>}
+        </button>
+
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors text-sm"

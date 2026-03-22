@@ -19,6 +19,7 @@ import { useCloudSync } from '../../hooks/useCloudSync'
 import type { SyncStatus } from '../../hooks/useCloudSync'
 import Logo from '../ui/Logo'
 import GreenLedBackground from '../ui/GreenLedBackground'
+import FloatingMenuButton from './FloatingMenuButton'
 
 const alunoNavDesktop = [
   { path: '/aluno', icon: House, label: 'Inicio', end: true },
@@ -30,10 +31,9 @@ const alunoNavDesktop = [
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
 ]
 
-const alunoNavMobile: (typeof alunoNavDesktop[number] | null)[] = [
+const alunoNavMobile = [
   { path: '/aluno', icon: House, label: 'Início', end: true },
   { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
-  null, // FAB
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
 ]
@@ -70,7 +70,7 @@ export default function AlunoLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] relative">
+    <div className="min-h-[100dvh] bg-[#0A0A0A] relative" style={{ paddingTop: 'var(--sat, 0px)' }}>
       <GreenLedBackground />
 
       {/* Header */}
@@ -101,7 +101,7 @@ export default function AlunoLayout() {
           <button
             onClick={handleLogout}
             title="Sair"
-            className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors"
+            className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors hidden md:flex"
           >
             <SignOut size={20} />
           </button>
@@ -137,62 +137,44 @@ export default function AlunoLayout() {
       </nav>
 
       {/* Main Content */}
-      <main className="p-4 md:p-6 pb-20 md:pb-6 relative z-10">
+      <main className="p-4 md:p-6 pb-24 md:pb-6 relative z-10">
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        {alunoNavMobile.map((item) => {
-          if (!item) {
-            return (
-              <div
-                key="fab"
-                className="relative flex-1 flex items-center justify-center"
-              >
-                <NavLink
-                  to="/aluno/dieta"
-                  className="absolute -top-5 w-12 h-12 rounded-full bg-[#00E620] flex items-center justify-center shadow-[0_0_20px_rgba(0,230,32,0.4)] active:scale-90 transition-transform touch-manipulation"
-                >
-                  <ForkKnife
-                    size={24}
-                    weight="bold"
-                    className="text-black"
+      {/* Mobile Bottom Nav - simplified, 4 items */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
+        {alunoNavMobile.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.end}
+            className={({ isActive }) =>
+              `relative flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-medium transition-all touch-manipulation ${
+                isActive ? 'text-[#00E620]' : 'text-gray-500'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <item.icon
+                  size={22}
+                  weight={isActive ? 'fill' : 'regular'}
+                />
+                <span>{item.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="aluno-bottom-indicator"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#00E620] rounded-full"
                   />
-                </NavLink>
-              </div>
-            )
-          }
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                `relative flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-medium transition-all touch-manipulation ${
-                  isActive ? 'text-[#00E620]' : 'text-gray-500'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon
-                    size={22}
-                    weight={isActive ? 'fill' : 'regular'}
-                  />
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="aluno-bottom-indicator"
-                      className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#00E620] rounded-full"
-                    />
-                  )}
-                </>
-              )}
-            </NavLink>
-          )
-        })}
+                )}
+              </>
+            )}
+          </NavLink>
+        ))}
       </nav>
+
+      {/* Floating Menu Button - mobile only */}
+      <FloatingMenuButton />
     </div>
   )
 }
