@@ -22,19 +22,26 @@ import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import AlunoFeedback from './pages/aluno/AlunoFeedback'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
+import InstallPrompt from './components/ui/InstallPrompt'
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
 
   if (!isAuthenticated) {
-    return <Login />
+    return (
+      <>
+        <Login />
+        <InstallPrompt />
+      </>
+    )
   }
 
   const isAluno = user?.role === 'aluno'
 
   return (
     <ToastProvider>
+      <InstallPrompt />
       <Routes>
         {isAluno ? (
           <>
