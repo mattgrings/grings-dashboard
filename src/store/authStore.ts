@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 
+/* ───────── tipos ───────── */
 export interface Perfil {
   id: string
   nome: string
@@ -20,7 +21,6 @@ export interface Perfil {
   atualizado_em: string
 }
 
-// Interface de compatibilidade — o resto do app usa user.role, user.nome, etc.
 export interface AppUser {
   id: string
   nome: string
@@ -35,124 +35,159 @@ interface AuthState {
   user: AppUser | null
   perfil: Perfil | null
   isAuthenticated: boolean
-  carregando: boolean
-
+  inicializado: boolean   // splash depende disso
+  carregando: boolean     // loading de operações (login, etc.)
+  inicializar: () => Promise<void>
   login: (email: string, senha: string) => Promise<Perfil>
   logout: () => void
-  carregarPerfil: () => Promise<void>
 }
 
-function perfilToAppUser(perfil: Perfil): AppUser {
+/* ───────── helpers ───────── */
+const ADMIN_EMAILS = ['matteamconsultoria@gmail.com']
+
+function perfilToAppUser(p: Perfil): AppUser {
   return {
-    id: perfil.id,
-    nome: perfil.nome,
-    email: perfil.email,
-    role: perfil.perfil,
-    avatar: perfil.foto_url ?? undefined,
-    telefone: perfil.telefone ?? undefined,
-    instagram: perfil.instagram ?? undefined,
+    id: p.id,
+    nome: p.nome,
+    email: p.email,
+    role: p.perfil,
+    avatar: p.foto_url ?? undefined,
+    telefone: p.telefone ?? undefined,
+    instagram: p.instagram ?? undefined,
   }
 }
 
+function criarPerfilBasico(id: string, email: string, nome?: string): Perfil {
+  return {
+    id,
+    nome: nome ?? email.split('@')[0],
+    email,
+    perfil: ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'aluno',
+    ativo: true,
+    telefone: null,
+    instagram: null,
+    foto_url: null,
+    aluno_id: null,
+    plano: null,
+    data_inicio: null,
+    data_vencimento: null,
+    objetivo: null,
+    observacoes: null,
+    criado_em: new Date().toISOString(),
+    atualizado_em: new Date().toISOString(),
+  }
+}
+
+async function buscarPerfil(userId: string): Promise<Perfil | null> {
+  try {
+    const { data, error } = await supabase
+      .from('perfis')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error || !data) return null
+    return data as Perfil
+  } catch {
+    return null
+  }
+}
+
+/* ───────── store ───────── */
 export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   perfil: null,
   isAuthenticated: false,
-  carregando: true,
+  inicializado: false,
+  carregando: false,
 
-  carregarPerfil: async () => {
+  /**
+   * Chamado UMA vez no useEffect do App.tsx.
+   * Lê sessão do cache local (getSession) — nunca faz request bloqueante.
+   */
+  inicializar: async () => {
+    // Evita dupla chamada
+    if (get().inicializado) return
+
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        set({ user: null, perfil: null, isAuthenticated: false, carregando: false })
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session?.user) {
+        set({ inicializado: true })
         return
       }
 
-      const { data: perfil } = await supabase
-        .from('perfis')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+      const authUser = session.user
+      const perfil = await buscarPerfil(authUser.id)
+      const perfilFinal = perfil ?? criarPerfilBasico(
+        authUser.id,
+        authUser.email ?? '',
+        authUser.user_metadata?.full_name
+      )
 
-      if (perfil) {
-        set({
-          user: perfilToAppUser(perfil as Perfil),
-          perfil: perfil as Perfil,
-          isAuthenticated: true,
-          carregando: false,
-        })
-      } else {
-        // Perfil não existe ainda — criar básico
-        const novoPerfil: Partial<Perfil> = {
-          id: user.id,
-          nome: user.user_metadata?.full_name ?? user.email ?? 'Usuário',
-          email: user.email ?? '',
-          perfil: 'aluno',
-          ativo: true,
-        }
-        await supabase.from('perfis').upsert(novoPerfil)
-
-        const perfilCompleto = {
-          ...novoPerfil,
-          telefone: null,
-          instagram: null,
-          foto_url: null,
-          aluno_id: null,
-          plano: null,
-          data_inicio: null,
-          data_vencimento: null,
-          objetivo: null,
-          observacoes: null,
-          criado_em: new Date().toISOString(),
-          atualizado_em: new Date().toISOString(),
-        } as Perfil
-
-        set({
-          user: perfilToAppUser(perfilCompleto),
-          perfil: perfilCompleto,
-          isAuthenticated: true,
-          carregando: false,
-        })
-      }
+      set({
+        user: perfilToAppUser(perfilFinal),
+        perfil: perfilFinal,
+        isAuthenticated: true,
+        inicializado: true,
+      })
     } catch {
-      set({ user: null, perfil: null, isAuthenticated: false, carregando: false })
+      set({ inicializado: true })
     }
   },
 
   login: async (email, senha) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    })
-    if (error) throw new Error(error.message)
-    await get().carregarPerfil()
-    const perfil = get().perfil
-    if (!perfil) throw new Error('Perfil não encontrado')
-    return perfil
+    set({ carregando: true })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: senha,
+      })
+      if (error) throw new Error(error.message)
+
+      const authUser = data.user
+      if (!authUser) throw new Error('Erro ao obter usuário')
+
+      const perfil = await buscarPerfil(authUser.id)
+      const perfilFinal = perfil ?? criarPerfilBasico(
+        authUser.id,
+        authUser.email ?? email,
+        authUser.user_metadata?.full_name
+      )
+
+      set({
+        user: perfilToAppUser(perfilFinal),
+        perfil: perfilFinal,
+        isAuthenticated: true,
+        carregando: false,
+      })
+
+      return perfilFinal
+    } catch (err) {
+      set({ carregando: false })
+      throw err
+    }
   },
 
   logout: () => {
     set({ user: null, perfil: null, isAuthenticated: false })
     supabase.auth.signOut()
     try {
-      localStorage.removeItem('grings-auth')
+      const keys = Object.keys(localStorage)
+      keys.forEach((key) => {
+        if (key.startsWith('sb-') || key.startsWith('grings-')) {
+          localStorage.removeItem(key)
+        }
+      })
     } catch {
       // ignore
     }
   },
 }))
 
-// Ouvir mudanças de sessão em tempo real
-supabase.auth.onAuthStateChange(async (event) => {
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-    await useAuthStore.getState().carregarPerfil()
-  }
+/* ───────── listener ───────── */
+supabase.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT') {
     useAuthStore.setState({ user: null, perfil: null, isAuthenticated: false })
   }
 })
-
-// Carregar perfil ao iniciar
-useAuthStore.getState().carregarPerfil()

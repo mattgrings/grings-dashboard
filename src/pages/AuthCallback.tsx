@@ -7,21 +7,26 @@ import GreenLedBackground from '../components/ui/GreenLedBackground'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
-  const carregarPerfil = useAuthStore((s) => s.carregarPerfil)
+  const inicializar = useAuthStore((s) => s.inicializar)
 
   useEffect(() => {
     const handleCallback = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
+      const { data: { session }, error } = await supabase.auth.getSession()
 
       if (error || !session) {
         navigate('/', { replace: true })
         return
       }
 
-      await carregarPerfil()
+      // Check if this is a password recovery flow
+      const hash = window.location.hash
+      if (hash.includes('type=recovery')) {
+        navigate('/redefinir-senha', { replace: true })
+        return
+      }
+
+      // Re-initialize auth with the new session
+      await inicializar()
 
       const { data: perfil } = await supabase
         .from('perfis')
@@ -33,7 +38,7 @@ export default function AuthCallback() {
     }
 
     handleCallback()
-  }, [navigate, carregarPerfil])
+  }, [navigate, inicializar])
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center relative">

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ToastProvider } from './components/ui/Toast'
 import ScrollRestoration from './components/ui/ScrollRestoration'
@@ -24,34 +25,57 @@ import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
 import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import AlunoFeedback from './pages/aluno/AlunoFeedback'
 import Login from './pages/Login'
+import RedefinirSenha from './pages/RedefinirSenha'
 import AuthCallback from './pages/AuthCallback'
 import { useAuthStore } from './store/authStore'
 import InstallPrompt from './components/ui/InstallPrompt'
 import Logo from './components/ui/Logo'
 import GreenLedBackground from './components/ui/GreenLedBackground'
 
+/* ───────── SplashScreen ───────── */
+function SplashScreen() {
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center relative">
+      <GreenLedBackground />
+      <div className="text-center space-y-4 relative z-10">
+        <Logo size="lg" animated />
+        <p className="text-gray-600 text-sm animate-pulse">Carregando...</p>
+      </div>
+    </div>
+  )
+}
+
+/* ───────── App ───────── */
 export default function App() {
+  const inicializado = useAuthStore((s) => s.inicializado)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
-  const carregando = useAuthStore((s) => s.carregando)
+  const inicializar = useAuthStore((s) => s.inicializar)
 
-  // Loading screen enquanto verifica sessão
-  if (carregando) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center relative">
-        <GreenLedBackground />
-        <div className="text-center space-y-4 relative z-10">
-          <Logo size="lg" animated />
-          <p className="text-gray-600 text-sm animate-pulse">Carregando...</p>
-        </div>
-      </div>
-    )
+  // Safety timeout — nunca trava no splash por mais de 4s
+  const [forcarSaida, setForcarSaida] = useState(false)
+
+  useEffect(() => {
+    inicializar()
+  }, [inicializar])
+
+  useEffect(() => {
+    if (inicializado) return
+    const timer = setTimeout(() => setForcarSaida(true), 4000)
+    return () => clearTimeout(timer)
+  }, [inicializado])
+
+  // Mostra splash até inicializar (ou timeout)
+  if (!inicializado && !forcarSaida) {
+    return <SplashScreen />
   }
 
+  // Não autenticado — mostra login
   if (!isAuthenticated) {
     return (
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
         <Route
           path="*"
           element={
@@ -65,6 +89,7 @@ export default function App() {
     )
   }
 
+  // Autenticado
   const isAluno = user?.role === 'aluno'
 
   return (
@@ -72,12 +97,11 @@ export default function App() {
       <ScrollRestoration />
       <InstallPrompt />
       <Routes>
-        {/* OAuth callback — redireciona depois de login */}
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
         {isAluno ? (
           <>
-            {/* Aluno routes */}
             <Route path="/aluno" element={<AlunoLayout />}>
               <Route index element={<AlunoDashboard />} />
               <Route path="treino" element={<AlunoTreino />} />
@@ -92,7 +116,6 @@ export default function App() {
           </>
         ) : (
           <>
-            {/* Admin routes */}
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/captacoes" element={<Captacoes />} />
@@ -108,7 +131,6 @@ export default function App() {
               <Route path="/chat" element={<Chat />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
-            {/* Aluno routes also accessible for admin */}
             <Route path="/aluno" element={<AlunoLayout />}>
               <Route index element={<AlunoDashboard />} />
               <Route path="treino" element={<AlunoTreino />} />

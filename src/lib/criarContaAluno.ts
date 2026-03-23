@@ -31,8 +31,10 @@ export async function criarContaAluno(
   }
 
   try {
-    // Criar usuário via signUp (funciona com anon key)
-    // NOTA: Desativar "Enable email confirmations" no Supabase Dashboard
+    // 1) Salvar sessão do admin antes de signUp (signUp troca a sessão)
+    const { data: { session: adminSession } } = await supabase.auth.getSession()
+
+    // 2) Criar usuário via signUp
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: dados.email.trim().toLowerCase(),
       password: dados.senha,
@@ -52,12 +54,22 @@ export async function criarContaAluno(
       return { sucesso: false, erro: 'Erro ao criar usuário' }
     }
 
-    // Criar/atualizar perfil completo
+    const novoUserId = signUpData.user.id
+
+    // 3) Restaurar sessão do admin
+    if (adminSession) {
+      await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      })
+    }
+
+    // 4) Criar/atualizar perfil completo (agora como admin)
     const { error: perfilError } = await supabase
       .from('perfis')
       .upsert(
         {
-          id: signUpData.user.id,
+          id: novoUserId,
           nome: dados.nome.trim(),
           email: dados.email.trim().toLowerCase(),
           telefone: dados.telefone?.trim() || null,
@@ -76,11 +88,10 @@ export async function criarContaAluno(
 
     if (perfilError) {
       console.error('Erro ao salvar perfil:', perfilError)
-      // Conta criada mas perfil falhou — não é fatal, o trigger do Supabase
-      // já cria um perfil básico via handle_new_user
+      // Conta criada mas perfil falhou — não é fatal
     }
 
-    return { sucesso: true, alunoId: signUpData.user.id }
+    return { sucesso: true, alunoId: novoUserId }
   } catch (err: unknown) {
     console.error('Erro ao criar conta do aluno:', err)
     return {
