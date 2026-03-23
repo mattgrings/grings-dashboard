@@ -6,8 +6,10 @@ import { ptBR } from 'date-fns/locale'
 import {
   Plus, MagnifyingGlass, FunnelSimple, Barbell, Heart,
   TrendUp, FirstAid, Lightning, Pencil, Trash, Warning,
+  Eye, EyeSlash, ArrowsClockwise, CheckCircle,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
+import { criarContaAluno, calcularForcaSenha } from '../lib/criarContaAluno'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
@@ -51,6 +53,9 @@ const objetivoLabels: Record<ObjetivoAluno, string> = {
   reabilitacao: 'Reabilitação',
 }
 
+const forcaSenhaLabels = ['', 'Fraca', 'Razoável', 'Boa', 'Forte']
+const forcaSenhaCores = ['', 'bg-red-500', 'bg-yellow-500', 'bg-blue-500', 'bg-brand-green']
+
 export default function Alunos() {
   const navigate = useNavigate()
   const alunos = useAlunosStore((s) => s.alunos)
@@ -73,12 +78,18 @@ export default function Alunos() {
   const [telefone, setTelefone] = useState('')
   const [instagram, setInstagram] = useState('')
   const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [mostrarSenha, setMostrarSenha] = useState(false)
   const [dataNascimento, setDataNascimento] = useState('')
   const [objetivo, setObjetivo] = useState<ObjetivoAluno>('emagrecimento')
   const [status, setStatus] = useState<StatusAluno>('ativo')
   const [pesoInicial, setPesoInicial] = useState('')
   const [alturaM, setAlturaM] = useState('')
   const [observacoes, setObservacoes] = useState('')
+  const [criandoConta, setCriandoConta] = useState(false)
+  const [erroForm, setErroForm] = useState('')
+
+  const forcaSenha = calcularForcaSenha(senha)
 
   const filtered = useMemo(() => {
     return alunos.filter((a) => {
@@ -94,8 +105,10 @@ export default function Alunos() {
 
   const resetForm = () => {
     setNome(''); setTelefone(''); setInstagram(''); setEmail('')
+    setSenha(''); setMostrarSenha(false)
     setDataNascimento(''); setPesoInicial(''); setAlturaM(''); setObservacoes('')
     setObjetivo('emagrecimento'); setStatus('ativo')
+    setErroForm('')
   }
 
   const openCreate = () => {
@@ -110,38 +123,84 @@ export default function Alunos() {
     setTelefone(aluno.telefone)
     setInstagram(aluno.instagram ?? '')
     setEmail(aluno.email ?? '')
+    setSenha('')
+    setMostrarSenha(false)
     setDataNascimento(aluno.dataNascimento ?? '')
     setObjetivo(aluno.objetivo)
     setStatus(aluno.status)
     setPesoInicial(aluno.pesoInicial?.toString() ?? '')
     setAlturaM(aluno.alturaM?.toString() ?? '')
     setObservacoes(aluno.observacoes ?? '')
+    setErroForm('')
     setShowForm(true)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!nome.trim() || !telefone.trim()) return
+    setErroForm('')
 
-    const data = {
-      nome: nome.trim(),
-      telefone: telefone.trim(),
-      instagram: instagram.trim() || undefined,
-      email: email.trim() || undefined,
-      dataNascimento: dataNascimento || undefined,
-      objetivo,
-      status,
-      observacoes: observacoes.trim() || undefined,
-      pesoInicial: pesoInicial ? parseFloat(pesoInicial) : undefined,
-      alturaM: alturaM ? parseFloat(alturaM) : undefined,
-    }
+    // Se está criando novo aluno, precisa de email e senha para criar conta
+    if (!editingAluno) {
+      if (!email.trim()) {
+        setErroForm('Email é obrigatório para criar a conta do aluno')
+        return
+      }
+      if (!senha || senha.length < 6) {
+        setErroForm('Senha deve ter pelo menos 6 caracteres')
+        return
+      }
 
-    if (editingAluno) {
+      // Criar conta no Supabase
+      setCriandoConta(true)
+      const resultado = await criarContaAluno({
+        nome: nome.trim(),
+        email: email.trim(),
+        senha,
+        telefone: telefone.trim() || undefined,
+        instagram: instagram.trim() || undefined,
+        objetivo: observacoes.trim() || undefined,
+        observacoes: observacoes.trim() || undefined,
+      })
+      setCriandoConta(false)
+
+      if (!resultado.sucesso) {
+        setErroForm(resultado.erro ?? 'Erro ao criar conta do aluno')
+        return
+      }
+
+      // Conta criada com sucesso — adicionar no store local também
+      addAluno({
+        nome: nome.trim(),
+        telefone: telefone.trim(),
+        instagram: instagram.trim() || undefined,
+        email: email.trim() || undefined,
+        dataNascimento: dataNascimento || undefined,
+        objetivo,
+        status,
+        observacoes: observacoes.trim() || undefined,
+        pesoInicial: pesoInicial ? parseFloat(pesoInicial) : undefined,
+        alturaM: alturaM ? parseFloat(alturaM) : undefined,
+        dataInicio: new Date(),
+      })
+
+      showToast('Aluno cadastrado com acesso ao app!')
+    } else {
+      // Editando aluno existente — sem mexer na conta
+      const data = {
+        nome: nome.trim(),
+        telefone: telefone.trim(),
+        instagram: instagram.trim() || undefined,
+        email: email.trim() || undefined,
+        dataNascimento: dataNascimento || undefined,
+        objetivo,
+        status,
+        observacoes: observacoes.trim() || undefined,
+        pesoInicial: pesoInicial ? parseFloat(pesoInicial) : undefined,
+        alturaM: alturaM ? parseFloat(alturaM) : undefined,
+      }
       updateAluno(editingAluno.id, data)
       showToast('Aluno atualizado com sucesso!')
-    } else {
-      addAluno({ ...data, dataInicio: new Date() })
-      showToast('Aluno cadastrado com sucesso!')
     }
 
     setShowForm(false)
@@ -304,17 +363,84 @@ export default function Alunos() {
               <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@usuario" className={inputClass} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          {/* Acesso ao app — só aparece ao CRIAR novo aluno */}
+          {!editingAluno && (
+            <div className="p-4 bg-brand-green/5 border border-brand-green/15 rounded-xl space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle size={16} className="text-brand-green" />
+                <span className="text-xs font-semibold text-brand-green uppercase tracking-wider">Acesso ao App</span>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Email do aluno *</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setErroForm('') }}
+                  placeholder="aluno@email.com"
+                  className={inputClass}
+                  required
+                />
+                <p className="text-[11px] text-gray-600 mt-1">O aluno usará este email para fazer login</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Senha inicial *</label>
+                <div className="relative">
+                  <input
+                    type={mostrarSenha ? 'text' : 'password'}
+                    value={senha}
+                    onChange={(e) => { setSenha(e.target.value); setErroForm('') }}
+                    placeholder="Mínimo 6 caracteres"
+                    className={`${inputClass} pr-10`}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarSenha(!mostrarSenha)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors touch-manipulation"
+                  >
+                    {mostrarSenha ? <EyeSlash size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {/* Barra de força da senha */}
+                {senha && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 flex-1 rounded-full transition-all ${
+                            forcaSenha >= level ? forcaSenhaCores[forcaSenha] : 'bg-white/5'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className={`text-[11px] ${
+                      forcaSenha <= 1 ? 'text-red-400' : forcaSenha === 2 ? 'text-yellow-400' : forcaSenha === 3 ? 'text-blue-400' : 'text-brand-green'
+                    }`}>
+                      {forcaSenhaLabels[forcaSenha]}
+                    </p>
+                  </div>
+                )}
+                <p className="text-[11px] text-gray-600 mt-1">Você pode informar essa senha ao aluno depois</p>
+              </div>
+            </div>
+          )}
+
+          {/* Email (ao editar) */}
+          {editingAluno && (
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@exemplo.com" className={inputClass} />
             </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Data de Nascimento</label>
               <input type="date" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} className={inputClass} />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Objetivo</label>
               <select value={objetivo} onChange={(e) => setObjetivo(e.target.value as ObjetivoAluno)} className={inputClass}>
@@ -325,6 +451,8 @@ export default function Alunos() {
                 <option value="reabilitacao">Reabilitação</option>
               </select>
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Status</label>
               <select value={status} onChange={(e) => setStatus(e.target.value as StatusAluno)} className={inputClass}>
@@ -333,24 +461,41 @@ export default function Alunos() {
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Peso Inicial (kg)</label>
               <input type="number" step="0.1" value={pesoInicial} onChange={(e) => setPesoInicial(e.target.value)} placeholder="70.5" className={inputClass} />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5">Altura (m)</label>
               <input type="number" step="0.01" value={alturaM} onChange={(e) => setAlturaM(e.target.value)} placeholder="1.70" className={inputClass} />
             </div>
+            <div />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1.5">Observações</label>
             <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Restrições, objetivos específicos..." rows={3} className={`${inputClass} resize-none`} />
           </div>
+
+          {/* Erro */}
+          {erroForm && (
+            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5">
+              <Warning size={16} weight="fill" />
+              {erroForm}
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => { setShowForm(false); setEditingAluno(null) }} className="flex-1">Cancelar</Button>
-            <Button type="submit" className="flex-1">{editingAluno ? 'Salvar Alterações' : 'Cadastrar Aluno'}</Button>
+            <Button type="submit" disabled={criandoConta} className="flex-1">
+              {criandoConta ? (
+                <span className="flex items-center justify-center gap-2">
+                  <ArrowsClockwise size={16} className="animate-spin" />
+                  Criando conta...
+                </span>
+              ) : editingAluno ? 'Salvar Alterações' : 'Cadastrar Aluno'}
+            </Button>
           </div>
         </form>
       </Modal>
