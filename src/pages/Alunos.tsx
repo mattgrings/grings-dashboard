@@ -5,13 +5,13 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   Plus, MagnifyingGlass, FunnelSimple, Barbell, Heart,
-  TrendUp, FirstAid, Lightning,
+  TrendUp, FirstAid, Lightning, Pencil, Trash, Warning,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
-import type { StatusAluno, ObjetivoAluno } from '../types'
+import type { StatusAluno, ObjetivoAluno, Aluno } from '../types'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -55,11 +55,15 @@ export default function Alunos() {
   const navigate = useNavigate()
   const alunos = useAlunosStore((s) => s.alunos)
   const addAluno = useAlunosStore((s) => s.addAluno)
+  const updateAluno = useAlunosStore((s) => s.updateAluno)
+  const deleteAluno = useAlunosStore((s) => s.deleteAluno)
   const fotos = useAlunosStore((s) => s.fotos)
   const treinos = useAlunosStore((s) => s.treinos)
   const { showToast } = useToast()
 
   const [showForm, setShowForm] = useState(false)
+  const [editingAluno, setEditingAluno] = useState<Aluno | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Aluno | null>(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState<StatusAluno | ''>('')
   const [filterObjetivo, setFilterObjetivo] = useState<ObjetivoAluno | ''>('')
@@ -71,6 +75,7 @@ export default function Alunos() {
   const [email, setEmail] = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
   const [objetivo, setObjetivo] = useState<ObjetivoAluno>('emagrecimento')
+  const [status, setStatus] = useState<StatusAluno>('ativo')
   const [pesoInicial, setPesoInicial] = useState('')
   const [alturaM, setAlturaM] = useState('')
   const [observacoes, setObservacoes] = useState('')
@@ -87,28 +92,68 @@ export default function Alunos() {
     })
   }, [alunos, search, filterStatus, filterObjetivo])
 
+  const resetForm = () => {
+    setNome(''); setTelefone(''); setInstagram(''); setEmail('')
+    setDataNascimento(''); setPesoInicial(''); setAlturaM(''); setObservacoes('')
+    setObjetivo('emagrecimento'); setStatus('ativo')
+  }
+
+  const openCreate = () => {
+    resetForm()
+    setEditingAluno(null)
+    setShowForm(true)
+  }
+
+  const openEdit = (aluno: Aluno) => {
+    setEditingAluno(aluno)
+    setNome(aluno.nome)
+    setTelefone(aluno.telefone)
+    setInstagram(aluno.instagram ?? '')
+    setEmail(aluno.email ?? '')
+    setDataNascimento(aluno.dataNascimento ?? '')
+    setObjetivo(aluno.objetivo)
+    setStatus(aluno.status)
+    setPesoInicial(aluno.pesoInicial?.toString() ?? '')
+    setAlturaM(aluno.alturaM?.toString() ?? '')
+    setObservacoes(aluno.observacoes ?? '')
+    setShowForm(true)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!nome.trim() || !telefone.trim()) return
 
-    addAluno({
+    const data = {
       nome: nome.trim(),
       telefone: telefone.trim(),
       instagram: instagram.trim() || undefined,
       email: email.trim() || undefined,
       dataNascimento: dataNascimento || undefined,
       objetivo,
-      status: 'ativo',
-      dataInicio: new Date(),
+      status,
       observacoes: observacoes.trim() || undefined,
       pesoInicial: pesoInicial ? parseFloat(pesoInicial) : undefined,
       alturaM: alturaM ? parseFloat(alturaM) : undefined,
-    })
+    }
 
-    showToast('Aluno cadastrado com sucesso!')
+    if (editingAluno) {
+      updateAluno(editingAluno.id, data)
+      showToast('Aluno atualizado com sucesso!')
+    } else {
+      addAluno({ ...data, dataInicio: new Date() })
+      showToast('Aluno cadastrado com sucesso!')
+    }
+
     setShowForm(false)
-    setNome(''); setTelefone(''); setInstagram(''); setEmail('')
-    setDataNascimento(''); setPesoInicial(''); setAlturaM(''); setObservacoes('')
+    setEditingAluno(null)
+    resetForm()
+  }
+
+  const handleDelete = () => {
+    if (!confirmDelete) return
+    deleteAluno(confirmDelete.id)
+    showToast('Aluno excluído permanentemente.')
+    setConfirmDelete(null)
   }
 
   const inputClass =
@@ -124,7 +169,7 @@ export default function Alunos() {
             {alunos.filter((a) => a.status === 'ativo').length} ativos de {alunos.length} total
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={openCreate}>
           <Plus size={16} weight="bold" />
           Novo Aluno
         </Button>
@@ -180,41 +225,60 @@ export default function Alunos() {
                 key={aluno.id}
                 variants={cardVariants}
                 whileHover={{ scale: 1.01, boxShadow: '0 0 25px rgba(0, 230, 32, 0.12)' }}
-                onClick={() => navigate(`/alunos/${aluno.id}`)}
-                className="bg-surface/50 backdrop-blur-md border border-white/5 rounded-card p-5 cursor-pointer hover:border-brand-green/15 transition-colors"
+                className="bg-surface/50 backdrop-blur-md border border-white/5 rounded-card p-5 hover:border-brand-green/15 transition-colors relative group"
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-brand-green/15 flex items-center justify-center text-brand-green text-sm font-bold shrink-0">
-                    {initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="text-sm font-semibold text-white truncate">{aluno.nome}</h3>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColors[aluno.status]}`}>
-                        {statusLabels[aluno.status]}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500">{aluno.telefone}</p>
-                  </div>
+                {/* Edit/Delete buttons */}
+                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openEdit(aluno) }}
+                    className="w-8 h-8 rounded-lg bg-[#111111] border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#00E620] hover:border-[#00E620]/30 transition-all touch-manipulation"
+                    title="Editar"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmDelete(aluno) }}
+                    className="w-8 h-8 rounded-lg bg-[#111111] border border-white/10 flex items-center justify-center text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all touch-manipulation"
+                    title="Excluir"
+                  >
+                    <Trash size={14} />
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
-                    <Icon size={13} className="text-brand-green" />
-                    <span className="text-[11px] text-gray-400">{objetivoLabels[aluno.objetivo]}</span>
-                  </div>
-                  {aluno.pesoInicial && (
-                    <div className="px-2.5 py-1 bg-white/[0.03] rounded-lg">
-                      <span className="text-[11px] text-gray-400">{aluno.pesoInicial}kg</span>
+                <div onClick={() => navigate(`/alunos/${aluno.id}`)} className="cursor-pointer">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-brand-green/15 flex items-center justify-center text-brand-green text-sm font-bold shrink-0">
+                      {initials}
                     </div>
-                  )}
-                </div>
+                    <div className="flex-1 min-w-0 pr-16">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-sm font-semibold text-white truncate">{aluno.nome}</h3>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColors[aluno.status]}`}>
+                          {statusLabels[aluno.status]}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">{aluno.telefone}</p>
+                    </div>
+                  </div>
 
-                <div className="flex items-center justify-between text-[11px] text-gray-600 pt-3 border-t border-white/5">
-                  <span>Desde {format(new Date(aluno.dataInicio), "MMM yyyy", { locale: ptBR })}</span>
-                  <div className="flex items-center gap-3">
-                    <span>{alunoFotos} fotos</span>
-                    <span>{alunoTreinos} treinos</span>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
+                      <Icon size={13} className="text-brand-green" />
+                      <span className="text-[11px] text-gray-400">{objetivoLabels[aluno.objetivo]}</span>
+                    </div>
+                    {aluno.pesoInicial && (
+                      <div className="px-2.5 py-1 bg-white/[0.03] rounded-lg">
+                        <span className="text-[11px] text-gray-400">{aluno.pesoInicial}kg</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 pt-3 border-t border-white/5">
+                    <span>Desde {format(new Date(aluno.dataInicio), "MMM yyyy", { locale: ptBR })}</span>
+                    <div className="flex items-center gap-3">
+                      <span>{alunoFotos} fotos</span>
+                      <span>{alunoTreinos} treinos</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -223,8 +287,8 @@ export default function Alunos() {
         </motion.div>
       )}
 
-      {/* New Aluno Modal */}
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Novo Aluno">
+      {/* Create/Edit Aluno Modal */}
+      <Modal isOpen={showForm} onClose={() => { setShowForm(false); setEditingAluno(null) }} title={editingAluno ? 'Editar Aluno' : 'Novo Aluno'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs text-gray-400 mb-1.5">Nome *</label>
@@ -250,15 +314,25 @@ export default function Alunos() {
               <input type="date" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} className={inputClass} />
             </div>
           </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1.5">Objetivo</label>
-            <select value={objetivo} onChange={(e) => setObjetivo(e.target.value as ObjetivoAluno)} className={inputClass}>
-              <option value="emagrecimento">Emagrecimento</option>
-              <option value="hipertrofia">Hipertrofia</option>
-              <option value="saude">Saúde</option>
-              <option value="performance">Performance</option>
-              <option value="reabilitacao">Reabilitação</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5">Objetivo</label>
+              <select value={objetivo} onChange={(e) => setObjetivo(e.target.value as ObjetivoAluno)} className={inputClass}>
+                <option value="emagrecimento">Emagrecimento</option>
+                <option value="hipertrofia">Hipertrofia</option>
+                <option value="saude">Saúde</option>
+                <option value="performance">Performance</option>
+                <option value="reabilitacao">Reabilitação</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value as StatusAluno)} className={inputClass}>
+                <option value="ativo">Ativo</option>
+                <option value="pausado">Pausado</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -275,10 +349,35 @@ export default function Alunos() {
             <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Restrições, objetivos específicos..." rows={3} className={`${inputClass} resize-none`} />
           </div>
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="flex-1">Cancelar</Button>
-            <Button type="submit" className="flex-1">Cadastrar Aluno</Button>
+            <Button type="button" variant="ghost" onClick={() => { setShowForm(false); setEditingAluno(null) }} className="flex-1">Cancelar</Button>
+            <Button type="submit" className="flex-1">{editingAluno ? 'Salvar Alterações' : 'Cadastrar Aluno'}</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Confirm Delete Modal */}
+      <Modal isOpen={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Excluir Aluno">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <Warning size={24} className="text-red-400 flex-shrink-0" />
+            <p className="text-sm text-gray-300">
+              Tem certeza que deseja excluir permanentemente os dados de{' '}
+              <strong className="text-white">{confirmDelete?.nome}</strong>?
+              Esta ação não pode ser desfeita.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button type="button" variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">
+              Cancelar
+            </Button>
+            <button
+              onClick={handleDelete}
+              className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors touch-manipulation"
+            >
+              Excluir Permanentemente
+            </button>
+          </div>
+        </div>
       </Modal>
     </motion.div>
   )

@@ -5,6 +5,8 @@ import LeadCard from './LeadCard'
 interface LeadListProps {
   leads: Lead[]
   onScheduleCall?: (lead: Lead) => void
+  onEdit?: (lead: Lead) => void
+  onDelete?: (lead: Lead) => void
 }
 
 const containerVariants = {
@@ -17,7 +19,7 @@ const cardVariants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } },
 }
 
-export default function LeadList({ leads, onScheduleCall }: LeadListProps) {
+export default function LeadList({ leads, onScheduleCall, onEdit, onDelete }: LeadListProps) {
   if (leads.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-600">
@@ -39,7 +41,7 @@ export default function LeadList({ leads, onScheduleCall }: LeadListProps) {
     >
       {leads.map((lead) => (
         <motion.div key={lead.id} variants={cardVariants}>
-          <LeadCard lead={lead} onScheduleCall={onScheduleCall} />
+          <LeadCard lead={lead} onScheduleCall={onScheduleCall} onEdit={onEdit} onDelete={onDelete} />
         </motion.div>
       ))}
     </motion.div>

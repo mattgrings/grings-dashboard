@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, MagnifyingGlass, FunnelSimple } from '@phosphor-icons/react'
+import { Plus, MagnifyingGlass, FunnelSimple, Warning } from '@phosphor-icons/react'
 import { useLeadsStore } from '../store/leadsStore'
 import { useToast } from '../components/ui/Toast'
 import Button from '../components/ui/Button'
@@ -12,9 +12,12 @@ import type { Lead, OrigemLead, StatusLead } from '../types'
 export default function Captacoes() {
   const leads = useLeadsStore((s) => s.leads)
   const updateLead = useLeadsStore((s) => s.updateLead)
+  const deleteLead = useLeadsStore((s) => s.deleteLead)
   const { showToast } = useToast()
 
   const [showForm, setShowForm] = useState(false)
+  const [editingLead, setEditingLead] = useState<Lead | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Lead | null>(null)
   const [showSchedule, setShowSchedule] = useState(false)
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [search, setSearch] = useState('')
@@ -57,6 +60,18 @@ export default function Captacoes() {
     setScheduleNotes('')
   }
 
+  const handleEdit = (lead: Lead) => {
+    setEditingLead(lead)
+    setShowForm(true)
+  }
+
+  const handleDelete = () => {
+    if (!confirmDelete) return
+    deleteLead(confirmDelete.id)
+    showToast('Lead excluído permanentemente.')
+    setConfirmDelete(null)
+  }
+
   const inputClass =
     'w-full px-4 py-2.5 bg-surface border border-white/5 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-brand-green/30 focus:shadow-glow-green-sm transition-all'
 
@@ -68,7 +83,7 @@ export default function Captacoes() {
           <h2 className="text-2xl font-display tracking-wider text-white">CAPTAÇÕES</h2>
           <p className="text-sm text-gray-500">{leads.length} leads no total</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => { setEditingLead(null); setShowForm(true) }}>
           <Plus size={16} weight="bold" />
           Novo Lead
         </Button>
@@ -118,11 +133,23 @@ export default function Captacoes() {
       </div>
 
       {/* Lead List */}
-      <LeadList leads={filtered} onScheduleCall={handleScheduleCall} />
+      <LeadList
+        leads={filtered}
+        onScheduleCall={handleScheduleCall}
+        onEdit={handleEdit}
+        onDelete={(lead) => setConfirmDelete(lead)}
+      />
 
-      {/* New Lead Modal */}
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Novo Lead">
-        <LeadForm onClose={() => setShowForm(false)} />
+      {/* New/Edit Lead Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); setEditingLead(null) }}
+        title={editingLead ? 'Editar Lead' : 'Novo Lead'}
+      >
+        <LeadForm
+          lead={editingLead}
+          onClose={() => { setShowForm(false); setEditingLead(null) }}
+        />
       </Modal>
 
       {/* Schedule Call Modal */}
@@ -171,6 +198,31 @@ export default function Captacoes() {
             </div>
           </form>
         )}
+      </Modal>
+
+      {/* Confirm Delete Modal */}
+      <Modal isOpen={!!confirmDelete} onClose={() => setConfirmDelete(null)} title="Excluir Lead">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <Warning size={24} className="text-red-400 flex-shrink-0" />
+            <p className="text-sm text-gray-300">
+              Tem certeza que deseja excluir permanentemente os dados de{' '}
+              <strong className="text-white">{confirmDelete?.nome}</strong>?
+              Esta ação não pode ser desfeita.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button type="button" variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">
+              Cancelar
+            </Button>
+            <button
+              onClick={handleDelete}
+              className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors touch-manipulation"
+            >
+              Excluir Permanentemente
+            </button>
+          </div>
+        </div>
       </Modal>
     </motion.div>
   )

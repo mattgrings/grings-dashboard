@@ -20,7 +20,6 @@ import {
   ChartLineUp,
   Calculator,
   ChatsCircle,
-  Ruler,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -46,7 +45,6 @@ const alunoNav = [
   { path: '/aluno/dieta', icon: ForkKnife, label: 'Dieta' },
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
-  { path: '/aluno/medidas', icon: Ruler, label: 'Medidas' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calculadoras' },
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
   { path: '/aluno/chat', icon: ChatsCircle, label: 'Chat' },

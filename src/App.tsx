@@ -23,7 +23,6 @@ import AlunoEvolucao from './pages/aluno/AlunoEvolucao'
 import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
 import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import AlunoFeedback from './pages/aluno/AlunoFeedback'
-import AlunoMedidas from './pages/aluno/AlunoMedidas'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
 import InstallPrompt from './components/ui/InstallPrompt'
@@ -59,7 +58,6 @@ export default function App() {
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
               <Route path="feedback" element={<AlunoFeedback />} />
-              <Route path="medidas" element={<AlunoMedidas />} />
               <Route path="chat" element={<Chat />} />
             </Route>
             <Route path="*" element={<Navigate to="/aluno" replace />} />
@@ -91,7 +89,6 @@ export default function App() {
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
               <Route path="feedback" element={<AlunoFeedback />} />
-              <Route path="medidas" element={<AlunoMedidas />} />
               <Route path="chat" element={<Chat />} />
             </Route>
           </>

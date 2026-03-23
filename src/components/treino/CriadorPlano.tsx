@@ -140,49 +140,52 @@ export default function CriadorPlano({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0A0A0A] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#0A0A0A] flex flex-col overflow-x-hidden">
       {/* Header + Steps */}
       <div
         className="sticky top-0 z-20 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/5 px-4 py-4"
         style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={onFechar} className="touch-manipulation">
-            <ArrowLeft size={24} className="text-white" />
-          </button>
-          <h1 className="font-bold text-white">
-            {planoExistente ? 'Editar Plano' : 'Novo Plano de Treino'}
-          </h1>
-          <div className="w-8" />
-        </div>
-        <div className="flex gap-1">
-          {steps.map((s) => (
-            <div key={s.n} className="flex-1">
-              <div
-                className={`h-1.5 rounded-full transition-all ${
-                  s.n <= step ? 'bg-[#00E620]' : 'bg-white/10'
-                }`}
-              />
-              <p
-                className={`text-[10px] mt-1 text-center hidden sm:block ${
-                  s.n === step ? 'text-[#00E620] font-medium' : 'text-gray-600'
-                }`}
-              >
-                {s.label}
-              </p>
-            </div>
-          ))}
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={onFechar} className="touch-manipulation">
+              <ArrowLeft size={24} className="text-white" />
+            </button>
+            <h1 className="font-bold text-white text-sm sm:text-base">
+              {planoExistente ? 'Editar Plano' : 'Novo Plano de Treino'}
+            </h1>
+            <div className="w-8" />
+          </div>
+          <div className="flex gap-1">
+            {steps.map((s) => (
+              <div key={s.n} className="flex-1 min-w-0">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${
+                    s.n <= step ? 'bg-[#00E620]' : 'bg-white/10'
+                  }`}
+                />
+                <p
+                  className={`text-[10px] mt-1 text-center hidden sm:block truncate ${
+                    s.n === step ? 'text-[#00E620] font-medium' : 'text-gray-600'
+                  }`}
+                >
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4"
         style={{
           paddingBottom: 'calc(max(env(safe-area-inset-bottom), 0px) + 100px)',
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        <div className="w-full max-w-3xl mx-auto space-y-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -224,6 +227,7 @@ export default function CriadorPlano({
             {step === 5 && <StepRevisao plano={plano} />}
           </motion.div>
         </AnimatePresence>
+        </div>
       </div>
 
       {/* Bottom navigation */}
@@ -231,7 +235,7 @@ export default function CriadorPlano({
         className="fixed bottom-0 left-0 right-0 z-20 px-4 py-4 bg-[#0A0A0A] border-t border-white/5"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
       >
-        <div className="flex gap-3">
+        <div className="flex gap-3 max-w-3xl mx-auto">
           {step > 1 && (
             <button
               onClick={() => setStep((s) => s - 1)}
@@ -393,12 +397,12 @@ function StepInfo({
       {/* Objetivo */}
       <div className="space-y-1.5">
         <label className="text-sm text-gray-400 font-medium">Objetivo</label>
-        <div className="flex gap-2 flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {OBJETIVOS.map((obj) => (
             <button
               key={obj}
               onClick={() => onChange({ ...plano, objetivo: obj })}
-              className={`px-3 py-2 rounded-xl text-sm border transition-all touch-manipulation ${
+              className={`px-3 py-2 rounded-xl text-sm border transition-all touch-manipulation truncate ${
                 plano.objetivo === obj
                   ? 'bg-[#00E620] text-black font-bold border-[#00E620]'
                   : 'bg-[#111111] border-white/10 text-gray-400'
@@ -533,11 +537,11 @@ function StepDias({
             </div>
           </div>
 
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="grid grid-cols-7 gap-1">
             {DIAS_SEMANA.map((d) => (
               <span
                 key={d.id}
-                className={`w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center ${
+                className={`h-7 rounded-lg text-[11px] font-bold flex items-center justify-center ${
                   treino.diasSemana.includes(d.id)
                     ? 'bg-[#00E620] text-black shadow-[0_0_8px_rgba(0,230,32,0.4)]'
                     : 'bg-[#111111] text-gray-600'
@@ -894,12 +898,12 @@ function ModalDiaTreino({
 
       <div className="space-y-2">
         <label className="text-sm text-gray-400 font-medium">Dias da semana</label>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-7 gap-1.5">
           {DIAS_SEMANA.map((d) => (
             <button
               key={d.id}
               onClick={() => toggleDia(d.id)}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all touch-manipulation border ${
+              className={`py-3 rounded-xl text-xs sm:text-sm font-bold transition-all touch-manipulation border ${
                 dias.includes(d.id)
                   ? 'bg-[#00E620] text-black border-[#00E620]'
                   : 'bg-[#111111] border-white/10 text-gray-500'
@@ -1155,12 +1159,12 @@ function ModalConfigurarExercicio({
           {/* Reps */}
           <div className="space-y-1.5">
             <label className="text-xs text-gray-500">Repetições</label>
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="grid grid-cols-5 gap-1.5">
               {REPS_OPCOES.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => updateSerie(i, { repeticoes: opt })}
-                  className={`px-2.5 py-1 rounded-lg text-xs border transition-all touch-manipulation ${
+                  className={`px-1 py-1.5 rounded-lg text-[11px] border transition-all touch-manipulation truncate ${
                     serie.repeticoes === opt
                       ? 'bg-[#00E620] text-black font-bold border-[#00E620]'
                       : 'bg-[#161616] border-white/5 text-gray-400'
@@ -1207,12 +1211,12 @@ function ModalConfigurarExercicio({
           {/* Rest */}
           <div className="space-y-1.5">
             <label className="text-xs text-gray-500">Descanso</label>
-            <div className="flex gap-1.5">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
               {DESCANSO_OPCOES.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => updateSerie(i, { tempoDescanso: opt.value })}
-                  className={`flex-1 py-1.5 rounded-lg text-xs border transition-all touch-manipulation ${
+                  className={`py-1.5 rounded-lg text-xs border transition-all touch-manipulation ${
                     serie.tempoDescanso === opt.value
                       ? 'bg-[#00E620] text-black font-bold border-[#00E620]'
                       : 'bg-[#161616] border-white/5 text-gray-400'
@@ -1227,7 +1231,7 @@ function ModalConfigurarExercicio({
           {/* Type */}
           <div className="space-y-1.5">
             <label className="text-xs text-gray-500">Tipo de série</label>
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
               {(
                 [
                   { id: 'normal', label: 'Normal' },

@@ -12,7 +12,6 @@ import {
   Warning,
   ForkKnife,
   Calculator,
-  Ruler,
   ChatsCircle,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
@@ -28,7 +27,6 @@ const alunoNavDesktop = [
   { path: '/aluno/dieta', icon: ForkKnife, label: 'Dieta' },
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
-  { path: '/aluno/medidas', icon: Ruler, label: 'Medidas' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calc' },
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
   { path: '/aluno/chat', icon: ChatsCircle, label: 'Chat' },
