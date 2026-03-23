@@ -153,13 +153,16 @@ export default function Login() {
       const perfil = await login(email.trim(), senha)
       navigate(perfil.perfil === 'admin' ? '/' : '/aluno')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : ''
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('Login error:', msg)
       if (msg.includes('Invalid login credentials')) {
         setErro('Email ou senha incorretos')
       } else if (msg.includes('Email not confirmed')) {
         setErro('Conta não confirmada. Contate o administrador.')
+      } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        setErro('Erro de conexão. Verifique sua internet.')
       } else {
-        setErro('Erro ao entrar. Tente novamente.')
+        setErro(msg || 'Erro ao entrar. Tente novamente.')
       }
     } finally {
       setLoading(false)
