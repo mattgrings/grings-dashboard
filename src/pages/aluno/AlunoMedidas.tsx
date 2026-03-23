@@ -10,7 +10,7 @@ import {
 import BottomSheet from '../../components/ui/BottomSheet'
 import { useMedidasStore } from '../../store/medidasStore'
 import { useAuthStore } from '../../store/authStore'
-import type { MedidaCorporal, Circunferencias } from '../../types/medidas'
+import type { Circunferencias } from '../../types/medidas'
 
 const CAMPOS_CIRCUNFERENCIA: { key: keyof Circunferencias; label: string }[] = [
   { key: 'peitoral', label: 'Peitoral' },

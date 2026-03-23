@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { jsonStorage } from '../lib/storage'
-import type { PlanoTreinoCompleto, TreinoDia, ExercicioCompleto } from '../types/treino'
+import type { PlanoTreinoCompleto, ExercicioCompleto } from '../types/treino'
 
 interface PlanoTreinoState {
   planos: PlanoTreinoCompleto[]

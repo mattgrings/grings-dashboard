@@ -7,9 +7,6 @@ import {
   Trash,
   Pencil,
   MagnifyingGlass,
-  YoutubeLogo,
-  X,
-  Check,
   Minus,
 } from '@phosphor-icons/react'
 import InputGlow from '../ui/InputGlow'
@@ -219,7 +216,6 @@ export default function CriadorPlano({
             {step === 4 && (
               <StepConfiguracoes
                 plano={plano}
-                onChange={setPlano}
                 diaAtivo={diaAtivo}
                 onChangeDia={setDiaAtivo}
                 onConfigurar={setExercicioConfig}
@@ -685,13 +681,11 @@ function StepExercicios({
 // ═══════════════════════════════════
 function StepConfiguracoes({
   plano,
-  onChange,
   diaAtivo,
   onChangeDia,
   onConfigurar,
 }: {
   plano: PlanoForm
-  onChange: (p: PlanoForm) => void
   diaAtivo: number
   onChangeDia: (i: number) => void
   onConfigurar: (ex: ExercicioNoPlano) => void

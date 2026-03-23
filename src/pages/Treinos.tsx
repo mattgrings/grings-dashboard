@@ -8,7 +8,6 @@ import {
   MagnifyingGlass,
   Plus,
   UserPlus,
-  Pencil,
 } from '@phosphor-icons/react'
 import GradienteHeader from '../components/ui/GradienteHeader'
 import ExercicioCard from '../components/treino/ExercicioCard'
