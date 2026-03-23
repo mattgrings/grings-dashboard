@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowsClockwise } from '@phosphor-icons/react'
 
@@ -39,7 +40,7 @@ export default function BottomSheet({
     }
   }, [aberto])
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {aberto && (
         <>
@@ -128,6 +129,7 @@ export default function BottomSheet({
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

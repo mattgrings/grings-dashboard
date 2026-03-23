@@ -8,6 +8,7 @@ import {
   InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
+import { usePlanoTreinoStore } from '../store/planoTreinoStore'
 import { useToast } from '../components/ui/Toast'
 import ModalAcessoApp from '../components/alunos/ModalAcessoApp'
 import Button from '../components/ui/Button'
@@ -41,11 +42,16 @@ export default function PerfilAluno() {
   const addDieta = useAlunosStore((s) => s.addDieta)
   const deleteDieta = useAlunosStore((s) => s.deleteDieta)
 
+  // Planos de treino do CriadorPlano
+  const planosTreino = usePlanoTreinoStore((s) => s.planos.filter((p) => p.alunoId === id))
+  const deletePlano = usePlanoTreinoStore((s) => s.deletePlano)
+
   const [activeTab, setActiveTab] = useState<Tab>('fotos')
   const [showFotoModal, setShowFotoModal] = useState(false)
   const [showTreinoModal, setShowTreinoModal] = useState(false)
   const [showDietaModal, setShowDietaModal] = useState(false)
   const [expandedTreino, setExpandedTreino] = useState<string | null>(null)
+  const [expandedPlano, setExpandedPlano] = useState<string | null>(null)
   const [expandedDieta, setExpandedDieta] = useState<string | null>(null)
   const [modalAcessoAberto, setModalAcessoAberto] = useState(false)
 
@@ -371,19 +377,129 @@ export default function PerfilAluno() {
         {activeTab === 'treino' && (
           <motion.div key="treino" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-400">{treinos.length} atualizações de treino</h3>
+              <h3 className="text-sm font-medium text-gray-400">
+                {planosTreino.length} plano(s) · {treinos.length} atualização(ões)
+              </h3>
               <Button size="sm" onClick={() => setShowTreinoModal(true)}>
                 <Plus size={14} /> Novo Treino
               </Button>
             </div>
 
-            {treinos.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-gray-600 bg-surface/30 rounded-card border border-white/5">
-                <Barbell size={48} className="mb-3 opacity-30" />
-                <p className="text-sm">Nenhum treino registrado</p>
-              </div>
-            ) : (
+            {/* ── Planos de Treino (CriadorPlano) ── */}
+            {planosTreino.length > 0 && (
               <div className="space-y-3">
+                <p className="text-xs font-semibold text-brand-green uppercase tracking-wider">Planos de Treino</p>
+                {planosTreino.map((plano) => (
+                  <motion.div
+                    key={plano.id}
+                    className="bg-surface/50 border border-white/5 rounded-card overflow-hidden"
+                  >
+                    <button
+                      onClick={() => setExpandedPlano(expandedPlano === plano.id ? null : plano.id)}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <Barbell size={14} className="text-brand-green" />
+                          <h4 className="text-sm font-semibold text-white truncate">{plano.nome}</h4>
+                          {plano.ativo && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-green/15 text-brand-green font-medium flex-shrink-0">
+                              Ativo
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <span>{plano.objetivo} · {plano.nivel}</span>
+                          <span>{plano.treinos.length} dia(s)</span>
+                          <span>Início: {new Date(plano.dataInicio).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        {/* Letras dos treinos */}
+                        <div className="flex gap-1.5 mt-2">
+                          {plano.treinos.map((t, i) => (
+                            <span
+                              key={t.id}
+                              className="w-7 h-7 rounded-lg bg-brand-green/20 text-brand-green text-xs font-bold flex items-center justify-center"
+                            >
+                              {String.fromCharCode(65 + i)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deletePlano(plano.id); showToast('Plano removido', 'info') }}
+                          className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 transition-colors"
+                        >
+                          <Trash size={14} />
+                        </button>
+                        <span className={`text-gray-500 transition-transform ${expandedPlano === plano.id ? 'rotate-180' : ''}`}>▾</span>
+                      </div>
+                    </button>
+
+                    <AnimatePresence>
+                      {expandedPlano === plano.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 space-y-3">
+                            {plano.observacoesGerais && (
+                              <p className="text-xs text-gray-400 italic p-2 bg-white/[0.02] rounded-lg">{plano.observacoesGerais}</p>
+                            )}
+                            {plano.treinos.map((dia, di) => (
+                              <div key={dia.id} className="bg-white/[0.02] rounded-xl p-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="w-6 h-6 rounded-lg bg-brand-green/20 text-brand-green text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                    {String.fromCharCode(65 + di)}
+                                  </span>
+                                  <h5 className="text-xs font-semibold text-brand-green uppercase tracking-wider">{dia.nome}</h5>
+                                  {dia.duracaoEstimadaMinutos > 0 && (
+                                    <span className="text-[10px] text-gray-600 ml-auto">~{dia.duracaoEstimadaMinutos}min</span>
+                                  )}
+                                </div>
+                                {dia.aquecimento && (
+                                  <p className="text-[10px] text-yellow-500/70 mb-1.5">🔥 Aquecimento: {dia.aquecimento}</p>
+                                )}
+                                <div className="space-y-1.5">
+                                  {dia.exercicios.map((ex) => (
+                                    <div key={ex.id} className="flex items-center justify-between text-xs">
+                                      <span className="text-gray-300">{ex.exercicio.nome}</span>
+                                      <div className="flex items-center gap-2 text-gray-500">
+                                        <span>
+                                          {ex.series.length}x{ex.series[0]?.repeticoes ?? '?'}
+                                        </span>
+                                        {ex.series[0]?.cargaSugerida && (
+                                          <span className="text-brand-green/70">{ex.series[0].cargaSugerida}kg</span>
+                                        )}
+                                        {ex.series[0]?.tipoSerie !== 'normal' && (
+                                          <span className="text-purple-400 text-[10px]">{ex.series[0].tipoSerie.replace('_', ' ')}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                {dia.observacoesGerais && (
+                                  <p className="text-[10px] text-gray-500 mt-2 pt-2 border-t border-white/5">📝 {dia.observacoesGerais}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Atualizações manuais de treino ── */}
+            {treinos.length > 0 && (
+              <div className="space-y-3">
+                {planosTreino.length > 0 && (
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider pt-2">Atualizações Manuais</p>
+                )}
                 {treinos.map((treino) => (
                   <motion.div
                     key={treino.id}
@@ -452,6 +568,15 @@ export default function PerfilAluno() {
                     </AnimatePresence>
                   </motion.div>
                 ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {planosTreino.length === 0 && treinos.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-600 bg-surface/30 rounded-card border border-white/5">
+                <Barbell size={48} className="mb-3 opacity-30" />
+                <p className="text-sm">Nenhum treino registrado</p>
+                <p className="text-xs text-gray-700 mt-1">Crie um plano em Treinos ou adicione manualmente</p>
               </div>
             )}
           </motion.div>
