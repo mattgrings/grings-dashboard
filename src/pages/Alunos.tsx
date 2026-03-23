@@ -6,10 +6,11 @@ import { ptBR } from 'date-fns/locale'
 import {
   Plus, MagnifyingGlass, FunnelSimple, Barbell, Heart,
   TrendUp, FirstAid, Lightning, Pencil, Trash, Warning,
-  Eye, EyeSlash, ArrowsClockwise, CheckCircle,
+  Eye, EyeSlash, ArrowsClockwise, CheckCircle, Key,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import { criarContaAluno, calcularForcaSenha } from '../lib/criarContaAluno'
+import ModalAcessoApp from '../components/alunos/ModalAcessoApp'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
@@ -72,6 +73,7 @@ export default function Alunos() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState<StatusAluno | ''>('')
   const [filterObjetivo, setFilterObjetivo] = useState<ObjetivoAluno | ''>('')
+  const [acessoAluno, setAcessoAluno] = useState<Aluno | null>(null)
 
   // Form state
   const [nome, setNome] = useState('')
@@ -320,7 +322,7 @@ export default function Alunos() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
                       <Icon size={13} className="text-brand-green" />
                       <span className="text-[11px] text-gray-400">{objetivoLabels[aluno.objetivo]}</span>
@@ -329,6 +331,21 @@ export default function Alunos() {
                       <div className="px-2.5 py-1 bg-white/[0.03] rounded-lg">
                         <span className="text-[11px] text-gray-400">{aluno.pesoInicial}kg</span>
                       </div>
+                    )}
+                    {/* Badge de acesso ao app */}
+                    {aluno.email ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-blue-500/15 text-blue-400">
+                        <CheckCircle size={10} weight="fill" />
+                        Tem acesso
+                      </span>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setAcessoAluno(aluno) }}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-yellow-500/15 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/25 transition-all touch-manipulation"
+                      >
+                        <Key size={10} weight="fill" />
+                        Sem acesso — criar
+                      </button>
                     )}
                   </div>
 
@@ -524,6 +541,21 @@ export default function Alunos() {
           </div>
         </div>
       </Modal>
+
+      {/* Modal Acesso ao App */}
+      <ModalAcessoApp
+        aberto={!!acessoAluno}
+        aluno={acessoAluno ? {
+          nome: acessoAluno.nome,
+          email: acessoAluno.email,
+          temAcesso: !!acessoAluno.email,
+        } : null}
+        onFechar={() => setAcessoAluno(null)}
+        onSucesso={() => {
+          showToast('Acesso ao app criado com sucesso!')
+          setAcessoAluno(null)
+        }}
+      />
     </motion.div>
   )
 }

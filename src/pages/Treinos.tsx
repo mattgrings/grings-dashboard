@@ -12,15 +12,18 @@ import {
   ArrowLeft,
   Trash,
   DownloadSimple,
+  X,
 } from '@phosphor-icons/react'
 import GradienteHeader from '../components/ui/GradienteHeader'
 import ExercicioCard from '../components/treino/ExercicioCard'
 import CriadorPlano from '../components/treino/CriadorPlano'
+import ModalExercicio from '../components/exercicio/ModalExercicio'
 import Modal from '../components/ui/Modal'
 import {
   EXERCICIOS_BIBLIOTECA,
   GRUPOS_MUSCULARES,
   type GrupoMuscularBib,
+  type ExercicioBiblioteca,
 } from '../data/exerciciosBiblioteca'
 import { useTreinoStore } from '../store/treinoStore'
 import { usePlanoTreinoStore } from '../store/planoTreinoStore'
@@ -123,9 +126,15 @@ function AbaTreinosAlunos({ onCriarPlano }: { onCriarPlano: () => void }) {
 
 // ── Aba Biblioteca ──
 function AbaBiblioteca() {
+  const { showToast } = useToast()
   const [busca, setBusca] = useState('')
   const [grupoFiltro, setGrupoFiltro] = useState<GrupoMuscularBib | 'todos'>('todos')
+  const [modalAberto, setModalAberto] = useState(false)
+  const [exercicioEditando, setExercicioEditando] = useState<ExercicioBiblioteca | null>(null)
+
   const exerciciosCustom = useTreinoStore((s) => s.exerciciosCustom)
+  const addExercicioCustom = useTreinoStore((s) => s.addExercicioCustom)
+  const updateExercicioCustom = useTreinoStore((s) => s.updateExercicioCustom)
 
   const todosExercicios = useMemo(
     () => [...EXERCICIOS_BIBLIOTECA, ...exerciciosCustom],
@@ -140,34 +149,96 @@ function AbaBiblioteca() {
     })
   }, [todosExercicios, busca, grupoFiltro])
 
+  const abrirCriar = () => { setExercicioEditando(null); setModalAberto(true) }
+  const abrirEditar = (ex: ExercicioBiblioteca) => { setExercicioEditando(ex); setModalAberto(true) }
+  const fechar = () => { setModalAberto(false); setExercicioEditando(null) }
+
+  const handleSalvar = (dados: Partial<ExercicioBiblioteca>) => {
+    if (exercicioEditando) {
+      // Só pode editar custom exercises
+      if (exercicioEditando.id.startsWith('custom-')) {
+        updateExercicioCustom(exercicioEditando.id, dados)
+        showToast('Exercício atualizado!')
+      } else {
+        // Para exercícios da biblioteca base, criar uma cópia custom
+        addExercicioCustom({
+          nome: (dados.nome ?? exercicioEditando.nome),
+          grupoMuscular: (dados.grupoMuscular ?? exercicioEditando.grupoMuscular),
+          equipamento: (dados.equipamento ?? exercicioEditando.equipamento),
+          dificuldade: (dados.dificuldade ?? exercicioEditando.dificuldade),
+          instrucoes: dados.instrucoes,
+          linkVideo: dados.linkVideo,
+          gifUrl: dados.gifUrl,
+          criadoEm: new Date().toISOString(),
+        })
+        showToast('Cópia personalizada criada!')
+      }
+    } else {
+      addExercicioCustom({
+        nome: dados.nome!,
+        grupoMuscular: dados.grupoMuscular!,
+        equipamento: dados.equipamento ?? 'outro',
+        dificuldade: dados.dificuldade ?? 'iniciante',
+        instrucoes: dados.instrucoes,
+        linkVideo: dados.linkVideo,
+        gifUrl: dados.gifUrl,
+        criadoEm: new Date().toISOString(),
+      })
+      showToast('Exercício criado!')
+    }
+    fechar()
+  }
+
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <MagnifyingGlass
-          size={18}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-        />
-        <input
-          type="text"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar exercício..."
-          className="w-full bg-[#111111] border border-white/10 rounded-xl pl-10 pr-4 py-3
-                     text-white placeholder:text-gray-600 outline-none
-                     focus:border-[#00E620]/50 transition-colors"
-        />
+      {/* Header com busca + botão */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 relative">
+          <MagnifyingGlass
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+          />
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar exercício..."
+            className="w-full bg-[#111111] border border-white/10 rounded-xl pl-10 pr-4 py-3
+                       text-white placeholder:text-gray-600 outline-none
+                       focus:border-[#00E620]/50 transition-colors"
+          />
+          {busca && (
+            <button onClick={() => setBusca('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 touch-manipulation">
+              <X size={16} className="text-gray-600" />
+            </button>
+          )}
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(0,230,32,0.4)' }}
+          onClick={abrirCriar}
+          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#00E620]
+                     text-black font-bold text-sm flex-shrink-0 touch-manipulation
+                     shadow-[0_0_12px_rgba(0,230,32,0.3)]"
+        >
+          <Plus size={20} weight="bold" />
+          <span className="hidden sm:inline">Novo Exercício</span>
+          <span className="sm:hidden">Novo</span>
+        </motion.button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      {/* Filtros de grupo muscular */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
         <button
           onClick={() => setGrupoFiltro('todos')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border flex-shrink-0 ${
             grupoFiltro === 'todos'
               ? 'bg-[#00E620] text-black border-[#00E620]'
               : 'bg-[#111111] text-gray-400 border-white/5 hover:text-white'
           }`}
         >
-          Todos ({todosExercicios.length})
+          💪 Todos ({todosExercicios.length})
         </button>
         {GRUPOS_MUSCULARES.map((g) => {
           const count = todosExercicios.filter((e) => e.grupoMuscular === g.id).length
@@ -176,7 +247,7 @@ function AbaBiblioteca() {
             <button
               key={g.id}
               onClick={() => setGrupoFiltro(g.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border flex-shrink-0 ${
                 grupoFiltro === g.id
                   ? 'text-black font-bold border-transparent'
                   : 'bg-[#111111] text-gray-400 border-white/5 hover:text-white'
@@ -193,17 +264,56 @@ function AbaBiblioteca() {
         })}
       </div>
 
-      <div className="space-y-3">
-        {filtrados.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">Nenhum exercício encontrado.</p>
-        ) : (
-          filtrados.map((ex) => <ExercicioCard key={ex.id} exercicio={ex} />)
-        )}
-      </div>
-
-      <p className="text-center text-gray-600 text-xs pt-2">
-        {filtrados.length} de {todosExercicios.length} exercícios
+      {/* Contador */}
+      <p className="text-xs text-gray-600">
+        {filtrados.length} exercício{filtrados.length !== 1 ? 's' : ''}
+        {busca ? ` para "${busca}"` : ''}
       </p>
+
+      {/* Lista */}
+      {filtrados.length === 0 ? (
+        <div className="text-center py-16 space-y-4">
+          <div className="w-20 h-20 rounded-2xl bg-[#00E620]/10 flex items-center justify-center mx-auto">
+            <Barbell size={40} className="text-[#00E620]" />
+          </div>
+          <div>
+            <p className="text-white font-bold text-lg">Nenhum exercício encontrado</p>
+            <p className="text-gray-500 text-sm mt-1">
+              {busca
+                ? `Não encontramos "${busca}". Crie um novo exercício.`
+                : 'Comece adicionando exercícios à biblioteca.'}
+            </p>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={abrirCriar}
+            className="mx-auto flex items-center gap-2 px-6 py-3 rounded-xl bg-[#00E620]
+                       text-black font-bold text-sm touch-manipulation
+                       shadow-[0_0_15px_rgba(0,230,32,0.3)]"
+          >
+            <Plus size={18} weight="bold" />
+            Criar exercício
+          </motion.button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {filtrados.map((ex) => (
+            <ExercicioCard
+              key={ex.id}
+              exercicio={ex}
+              onEditar={() => abrirEditar(ex)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Criar/Editar */}
+      <ModalExercicio
+        aberto={modalAberto}
+        exercicio={exercicioEditando}
+        onFechar={fechar}
+        onSalvar={handleSalvar}
+      />
     </div>
   )
 }

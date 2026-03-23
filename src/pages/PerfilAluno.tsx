@@ -5,10 +5,11 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   ArrowLeft, Camera, Barbell, ForkKnife, Plus, Trash, CalendarBlank,
-  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare,
+  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key, CheckCircle,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import { useToast } from '../components/ui/Toast'
+import ModalAcessoApp from '../components/alunos/ModalAcessoApp'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import type {
@@ -46,6 +47,7 @@ export default function PerfilAluno() {
   const [showDietaModal, setShowDietaModal] = useState(false)
   const [expandedTreino, setExpandedTreino] = useState<string | null>(null)
   const [expandedDieta, setExpandedDieta] = useState<string | null>(null)
+  const [modalAcessoAberto, setModalAcessoAberto] = useState(false)
 
   // Foto form
   const fileRef = useRef<HTMLInputElement>(null)
@@ -222,6 +224,65 @@ export default function PerfilAluno() {
           </div>
         </div>
       </div>
+
+      {/* Acesso ao App */}
+      <div className="bg-surface/50 backdrop-blur-md border border-white/5 rounded-card p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            🔐 Acesso ao App
+          </h3>
+          <span className={`text-xs px-2 py-1 rounded-full ${
+            aluno.email
+              ? 'bg-brand-green/15 text-brand-green'
+              : 'bg-yellow-500/15 text-yellow-400'
+          }`}>
+            {aluno.email ? '✅ Ativo' : '⚠️ Sem acesso'}
+          </span>
+        </div>
+
+        {aluno.email ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <EnvelopeSimple size={16} className="text-gray-400" />
+              <span className="text-white">{aluno.email}</span>
+            </div>
+            <button
+              onClick={() => setModalAcessoAberto(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-gray-400 text-sm hover:text-white hover:border-brand-green/30 transition-all touch-manipulation"
+            >
+              <Key size={16} />
+              Redefinir senha
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-gray-400 text-sm">Este aluno ainda não tem acesso ao app.</p>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setModalAcessoAberto(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-green text-black font-bold text-sm shadow-[0_0_15px_rgba(0,230,32,0.3)] touch-manipulation"
+            >
+              <Key size={18} weight="bold" />
+              Criar acesso ao app
+            </motion.button>
+          </div>
+        )}
+      </div>
+
+      {/* Modal Acesso */}
+      <ModalAcessoApp
+        aberto={modalAcessoAberto}
+        aluno={{
+          nome: aluno.nome,
+          email: aluno.email,
+          temAcesso: !!aluno.email,
+        }}
+        onFechar={() => setModalAcessoAberto(false)}
+        onSucesso={() => {
+          showToast('Acesso ao app criado com sucesso!')
+          setModalAcessoAberto(false)
+        }}
+      />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 bg-surface/50 border border-white/5 rounded-xl p-1">
