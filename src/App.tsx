@@ -15,6 +15,7 @@ import SocialSelling from './pages/SocialSelling'
 import Frequencia from './pages/Frequencia'
 import Feedbacks from './pages/Feedbacks'
 import Treinos from './pages/Treinos'
+import Agenda from './pages/Agenda'
 import Chat from './pages/Chat'
 import Configuracoes from './pages/Configuracoes'
 import AlunoDashboard from './pages/aluno/AlunoDashboard'
@@ -128,6 +129,7 @@ export default function App() {
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/feedbacks" element={<Feedbacks />} />
               <Route path="/treinos" element={<Treinos />} />
+              <Route path="/agenda" element={<Agenda />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
