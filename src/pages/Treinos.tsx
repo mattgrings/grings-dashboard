@@ -169,7 +169,6 @@ function AbaBiblioteca() {
           instrucoes: dados.instrucoes,
           linkVideo: dados.linkVideo,
           gifUrl: dados.gifUrl,
-          criadoEm: new Date().toISOString(),
         })
         showToast('Cópia personalizada criada!')
       }
@@ -182,7 +181,6 @@ function AbaBiblioteca() {
         instrucoes: dados.instrucoes,
         linkVideo: dados.linkVideo,
         gifUrl: dados.gifUrl,
-        criadoEm: new Date().toISOString(),
       })
       showToast('Exercício criado!')
     }

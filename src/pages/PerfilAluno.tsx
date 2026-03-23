@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   ArrowLeft, Camera, Barbell, ForkKnife, Plus, Trash, CalendarBlank,
-  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key, CheckCircle,
+  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import { useToast } from '../components/ui/Toast'

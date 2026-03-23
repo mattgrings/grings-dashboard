@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   EnvelopeSimple, Lock, Eye, EyeSlash,
-  Warning, CheckCircle, XCircle, Info, Key,
+  Warning, CheckCircle, XCircle, Info,
 } from '@phosphor-icons/react'
 import BottomSheet from '../ui/BottomSheet'
 import { criarContaAluno, calcularForcaSenha } from '../../lib/criarContaAluno'
