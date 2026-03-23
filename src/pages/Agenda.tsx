@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   CalendarBlank, Plus, Phone, Timer, UserCircle, Megaphone,
   CheckCircle, Trash, CaretLeft, CaretRight, Clock, Warning,
-  ListBullets, CalendarDots, X, Barbell,
+  ListBullets, CalendarDots, X,
 } from '@phosphor-icons/react'
 import GradienteHeader from '../components/ui/GradienteHeader'
 import BottomSheet from '../components/ui/BottomSheet'
