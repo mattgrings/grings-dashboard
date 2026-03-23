@@ -37,9 +37,7 @@ interface AuthState {
   isAuthenticated: boolean
   carregando: boolean
 
-  login: (email: string, senha: string) => Promise<void>
-  loginComGoogle: () => Promise<void>
-  loginComApple: () => Promise<void>
+  login: (email: string, senha: string) => Promise<Perfil>
   logout: () => void
   carregarPerfil: () => Promise<void>
 }
@@ -86,8 +84,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           carregando: false,
         })
       } else {
-        // Perfil não existe ainda (pode acontecer com OAuth novo)
-        // Cria perfil básico
+        // Perfil não existe ainda — criar básico
         const novoPerfil: Partial<Perfil> = {
           id: user.id,
           nome: user.user_metadata?.full_name ?? user.email ?? 'Usuário',
@@ -131,28 +128,14 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     })
     if (error) throw new Error(error.message)
     await get().carregarPerfil()
-  },
-
-  loginComGoogle: async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    })
-    if (error) throw new Error(error.message)
-  },
-
-  loginComApple: async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    })
-    if (error) throw new Error(error.message)
+    const perfil = get().perfil
+    if (!perfil) throw new Error('Perfil não encontrado')
+    return perfil
   },
 
   logout: () => {
     set({ user: null, perfil: null, isAuthenticated: false })
     supabase.auth.signOut()
-    // Limpar dados do localStorage
     try {
       localStorage.removeItem('grings-auth')
     } catch {

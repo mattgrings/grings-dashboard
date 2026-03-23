@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   DownloadSimple,
@@ -6,6 +7,7 @@ import {
   Barbell,
   CurrencyDollar,
   ChartLineUp,
+  ChartBar,
 } from '@phosphor-icons/react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { useLeadsStore } from '../store/leadsStore'
@@ -32,13 +34,21 @@ const cardVariants = {
   },
 }
 
-const origemData = [
-  { name: 'Instagram', value: 35, color: '#E1306C' },
-  { name: 'WhatsApp', value: 25, color: '#25D366' },
-  { name: 'Indicação', value: 20, color: '#06B6D4' },
-  { name: 'Tráfego Pago', value: 15, color: '#F97316' },
-  { name: 'Outro', value: 5, color: '#6B7280' },
-]
+const ORIGEM_COLORS: Record<string, string> = {
+  instagram: '#E1306C',
+  whatsapp: '#25D366',
+  indicacao: '#06B6D4',
+  trafego_pago: '#F97316',
+  outro: '#6B7280',
+}
+
+const ORIGEM_LABELS: Record<string, string> = {
+  instagram: 'Instagram',
+  whatsapp: 'WhatsApp',
+  indicacao: 'Indicação',
+  trafego_pago: 'Tráfego Pago',
+  outro: 'Outro',
+}
 
 export default function Dashboard() {
   const leads = useLeadsStore((s) => s.leads)
@@ -58,12 +68,30 @@ export default function Dashboard() {
   const taxaConversao =
     leads.length > 0 ? (convertidos.length / leads.length) * 100 : 0
 
-  // Current month revenue
+  // Receita do mês atual — calculada dos dados reais
   const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
   const mesAtual = meses.find((m) => m.mes === currentMonth)
   const receitaMes = mesAtual
     ? mesAtual.vendas.reduce((sum, v) => sum + v.valor, 0)
     : 0
+
+  // Origem dos leads — calculada dos dados reais
+  const origemData = useMemo(() => {
+    if (leads.length === 0) return []
+
+    const contagem: Record<string, number> = {}
+    leads.forEach((l) => {
+      contagem[l.origem] = (contagem[l.origem] || 0) + 1
+    })
+
+    return Object.entries(contagem)
+      .map(([origem, count]) => ({
+        name: ORIGEM_LABELS[origem] ?? origem,
+        value: Math.round((count / leads.length) * 100),
+        color: ORIGEM_COLORS[origem] ?? '#6B7280',
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [leads])
 
   return (
     <motion.div
@@ -78,15 +106,13 @@ export default function Dashboard() {
         subtitulo="Visão geral do seu negócio"
       />
 
-      {/* KPI Cards */}
+      {/* KPI Cards — valores 100% reais, sem change hardcoded */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         <motion.div variants={cardVariants}>
           <KPICard
             icon={<DownloadSimple size={22} weight="duotone" />}
             label="Captações Hoje"
             value={todayLeads.length}
-            change={12}
-            changeLabel="vs ontem"
           />
         </motion.div>
         <motion.div variants={cardVariants}>
@@ -94,8 +120,6 @@ export default function Dashboard() {
             icon={<Barbell size={22} weight="duotone" />}
             label="Alunos Ativos"
             value={alunosAtivos.length}
-            change={5}
-            changeLabel="este mês"
           />
         </motion.div>
         <motion.div variants={cardVariants}>
@@ -104,8 +128,6 @@ export default function Dashboard() {
             label="Receita do Mês"
             value={receitaMes}
             prefix="R$"
-            change={8}
-            changeLabel="vs mês anterior"
           />
         </motion.div>
         <motion.div variants={cardVariants}>
@@ -114,7 +136,6 @@ export default function Dashboard() {
             label="Taxa de Conversão"
             value={taxaConversao}
             suffix="%"
-            change={3.2}
           />
         </motion.div>
         <motion.div variants={cardVariants}>
@@ -122,8 +143,6 @@ export default function Dashboard() {
             icon={<UsersThree size={22} weight="duotone" />}
             label="Leads Ativos"
             value={activeLeads.length}
-            change={15}
-            changeLabel="este mês"
           />
         </motion.div>
       </div>
@@ -138,52 +157,62 @@ export default function Dashboard() {
             <h3 className="text-sm font-medium text-gray-400 mb-4">
               Origem dos Leads
             </h3>
-            <div className="h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={origemData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {origemData.map((entry, index) => (
-                      <Cell key={index} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: '#1A1A1A',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      color: '#fff',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-1.5 mt-2">
-              {origemData.map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-gray-400">{item.name}</span>
-                  </div>
-                  <span className="text-white font-medium">{item.value}%</span>
+
+            {origemData.length === 0 ? (
+              <div className="h-[180px] flex flex-col items-center justify-center gap-3 text-gray-600">
+                <ChartBar size={32} className="opacity-30" />
+                <p className="text-sm">Sem dados de origem ainda</p>
+              </div>
+            ) : (
+              <>
+                <div className="h-[180px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={origemData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={75}
+                        paddingAngle={3}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {origemData.map((entry, index) => (
+                          <Cell key={index} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          background: '#1A1A1A',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          color: '#fff',
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </div>
+                <div className="space-y-1.5 mt-2">
+                  {origemData.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-gray-400">{item.name}</span>
+                      </div>
+                      <span className="text-white font-medium">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </div>

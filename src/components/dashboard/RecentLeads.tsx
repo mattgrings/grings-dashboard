@@ -54,33 +54,40 @@ export default function RecentLeads() {
           <User size={16} className="text-brand-green" />
           <h3 className="text-sm font-medium text-gray-400">Leads Recentes</h3>
         </div>
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="space-y-2"
-        >
-          {recentLeads.map((lead) => (
-            <motion.div
-              key={lead.id}
-              variants={itemVariants}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.02] transition-colors"
-            >
-              <LeadInitials nome={lead.nome} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white font-medium truncate">
-                  {lead.nome}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {format(new Date(lead.criadoEm), 'dd MMM, HH:mm', {
-                    locale: ptBR,
-                  })}
-                </p>
-              </div>
-              <Badge type="status" value={lead.status} />
-            </motion.div>
-          ))}
-        </motion.div>
+        {recentLeads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-gray-600">
+            <User size={32} className="mb-2 opacity-50" />
+            <p className="text-sm">Nenhum lead registrado ainda</p>
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="space-y-2"
+          >
+            {recentLeads.map((lead) => (
+              <motion.div
+                key={lead.id}
+                variants={itemVariants}
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.02] transition-colors"
+              >
+                <LeadInitials nome={lead.nome} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white font-medium truncate">
+                    {lead.nome}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(lead.criadoEm), 'dd MMM, HH:mm', {
+                      locale: ptBR,
+                    })}
+                  </p>
+                </div>
+                <Badge type="status" value={lead.status} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
 
       {/* Recent Feedbacks */}
