@@ -16,6 +16,7 @@ import {
   Gear,
   Funnel,
   Users,
+  ChatsCircle,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -31,6 +32,7 @@ const navItems = [
   { to: '/captacoes', icon: Funnel, label: 'Captações' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
   { to: '/feedbacks', icon: ChatText, label: 'Feedbacks' },
+  { to: '/chat', icon: ChatsCircle, label: 'Chat' },
 ]
 
 export default function Sidebar() {

@@ -8,9 +8,11 @@ import {
   MagnifyingGlass,
   Plus,
   UserPlus,
+  Pencil,
 } from '@phosphor-icons/react'
 import GradienteHeader from '../components/ui/GradienteHeader'
 import ExercicioCard from '../components/treino/ExercicioCard'
+import CriadorPlano from '../components/treino/CriadorPlano'
 import {
   EXERCICIOS_BIBLIOTECA,
   GRUPOS_MUSCULARES,
@@ -18,13 +20,15 @@ import {
 } from '../data/exerciciosBiblioteca'
 import { TEMPLATES_TREINO, type TemplateTreino } from '../data/templatesTreino'
 import { useTreinoStore } from '../store/treinoStore'
+import { usePlanoTreinoStore } from '../store/planoTreinoStore'
 import { useAlunosStore } from '../store/alunosStore'
+import type { PlanoTreinoCompleto } from '../types/treino'
 
 type Aba = 'treinos' | 'biblioteca' | 'templates'
 
 // ── Aba Treinos dos Alunos ──
-function AbaTreinosAlunos() {
-  const planos = useTreinoStore((s) => s.planos)
+function AbaTreinosAlunos({ onCriarPlano }: { onCriarPlano: () => void }) {
+  const planos = usePlanoTreinoStore((s) => s.planos)
   const alunos = useAlunosStore((s) => s.alunos)
   const alunosAtivos = alunos.filter((a) => a.status === 'ativo')
 
@@ -36,11 +40,12 @@ function AbaTreinosAlunos() {
         </p>
         <motion.button
           whileTap={{ scale: 0.95 }}
+          onClick={onCriarPlano}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00E620] text-black
                      font-bold text-sm shadow-[0_0_15px_rgba(0,230,32,0.3)] touch-manipulation"
         >
           <Plus size={18} weight="bold" />
-          Novo Treino
+          Novo Plano
         </motion.button>
       </div>
 
@@ -50,9 +55,9 @@ function AbaTreinosAlunos() {
             <Barbell size={40} className="text-[#00E620]" />
           </div>
           <div>
-            <p className="text-white font-bold text-lg">Nenhum treino criado</p>
+            <p className="text-white font-bold text-lg">Nenhum plano criado</p>
             <p className="text-gray-500 text-sm mt-1">
-              Crie treinos para seus {alunosAtivos.length} aluno(s) ativo(s) ou use um template pronto.
+              Crie planos de treino para seus {alunosAtivos.length} aluno(s) ativo(s) ou use um template.
             </p>
           </div>
         </div>
@@ -60,6 +65,9 @@ function AbaTreinosAlunos() {
         <div className="space-y-3">
           {planos.map((plano) => {
             const aluno = alunos.find((a) => a.id === plano.alunoId)
+            const totalExercicios = plano.treinos.reduce(
+              (sum, t) => sum + t.exercicios.length, 0
+            )
             return (
               <motion.div
                 key={plano.id}
@@ -70,22 +78,38 @@ function AbaTreinosAlunos() {
                   <div>
                     <h3 className="text-white font-bold">{plano.nome}</h3>
                     <p className="text-gray-500 text-sm mt-0.5">
-                      {aluno?.nome ?? 'Aluno'} · {plano.exercicios.length} exercícios
+                      {aluno?.nome ?? 'Aluno'} · {plano.treinos.length} dia(s) · {totalExercicios} exercícios
                     </p>
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      plano.ativo
-                        ? 'bg-[#00E620]/20 text-[#00E620]'
-                        : 'bg-gray-700/50 text-gray-400'
-                    }`}
-                  >
-                    {plano.ativo ? 'Ativo' : 'Inativo'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        plano.ativo
+                          ? 'bg-[#00E620]/20 text-[#00E620]'
+                          : 'bg-gray-700/50 text-gray-400'
+                      }`}
+                    >
+                      {plano.ativo ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
                 </div>
-                {plano.descricao && (
-                  <p className="text-gray-400 text-sm">{plano.descricao}</p>
-                )}
+
+                {/* Treino days */}
+                <div className="flex gap-2">
+                  {plano.treinos.map((t, i) => (
+                    <span
+                      key={t.id}
+                      className="w-8 h-8 rounded-lg bg-[#00E620]/20 text-[#00E620] text-xs font-bold flex items-center justify-center"
+                    >
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>{plano.objetivo} · {plano.nivel}</span>
+                  <span>Início: {new Date(plano.dataInicio).toLocaleDateString('pt-BR')}</span>
+                </div>
               </motion.div>
             )
           })}
@@ -116,7 +140,6 @@ function AbaBiblioteca() {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
       <div className="relative">
         <MagnifyingGlass
           size={18}
@@ -133,7 +156,6 @@ function AbaBiblioteca() {
         />
       </div>
 
-      {/* Group filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         <button
           onClick={() => setGrupoFiltro('todos')}
@@ -169,12 +191,9 @@ function AbaBiblioteca() {
         })}
       </div>
 
-      {/* Exercise list */}
       <div className="space-y-3">
         {filtrados.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
-            Nenhum exercício encontrado.
-          </p>
+          <p className="text-center text-gray-500 py-8">Nenhum exercício encontrado.</p>
         ) : (
           filtrados.map((ex) => <ExercicioCard key={ex.id} exercicio={ex} />)
         )}
@@ -194,7 +213,6 @@ function AbaTemplates() {
       <p className="text-gray-400 text-sm">
         Templates prontos para copiar e usar com seus alunos.
       </p>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TEMPLATES_TREINO.map((template) => (
           <TemplateCard key={template.id} template={template} />
@@ -210,9 +228,7 @@ function TemplateCard({ template }: { template: TemplateTreino }) {
       whileHover={{ y: -3, boxShadow: '0 12px 40px rgba(0,230,32,0.12)' }}
       className="bg-[#161616] border border-white/5 rounded-2xl p-5 relative overflow-hidden group"
     >
-      {/* Decorative gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00E620]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
       <div className="relative space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -231,8 +247,6 @@ function TemplateCard({ template }: { template: TemplateTreino }) {
             {template.nivel}
           </span>
         </div>
-
-        {/* Treinos list */}
         <div className="space-y-1">
           {template.treinos.map((t) => (
             <div key={t.letra} className="flex items-center gap-2 text-sm text-gray-400">
@@ -245,8 +259,6 @@ function TemplateCard({ template }: { template: TemplateTreino }) {
             </div>
           ))}
         </div>
-
-        {/* Buttons */}
         <div className="flex gap-2 pt-1">
           <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#111111] border border-white/5 text-gray-400 text-sm hover:text-white hover:border-[#00E620]/30 transition-all touch-manipulation">
             <Copy size={16} />
@@ -265,6 +277,8 @@ function TemplateCard({ template }: { template: TemplateTreino }) {
 // ── Página Principal ──
 export default function Treinos() {
   const [aba, setAba] = useState<Aba>('treinos')
+  const [criadorAberto, setCriadorAberto] = useState(false)
+  const addPlano = usePlanoTreinoStore((s) => s.addPlano)
 
   const tabs: { id: Aba; label: string; icon: typeof Users }[] = [
     { id: 'treinos', label: 'Treinos dos Alunos', icon: Users },
@@ -272,45 +286,60 @@ export default function Treinos() {
     { id: 'templates', label: 'Templates', icon: Copy },
   ]
 
+  const handleSalvarPlano = (plano: PlanoTreinoCompleto) => {
+    addPlano(plano)
+    setCriadorAberto(false)
+  }
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <GradienteHeader
-        icone={Barbell}
-        titulo="Treinos"
-        subtitulo="Gerencie treinos, biblioteca de exercícios e templates"
-      />
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+        <GradienteHeader
+          icone={Barbell}
+          titulo="Treinos"
+          subtitulo="Gerencie treinos, biblioteca de exercícios e templates"
+        />
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setAba(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all border touch-manipulation ${
-              aba === tab.id
-                ? 'bg-[#00E620] text-black font-bold border-[#00E620] shadow-[0_0_15px_rgba(0,230,32,0.3)]'
-                : 'bg-[#111111] border-white/5 text-gray-400 hover:text-white'
-            }`}
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setAba(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all border touch-manipulation ${
+                aba === tab.id
+                  ? 'bg-[#00E620] text-black font-bold border-[#00E620] shadow-[0_0_15px_rgba(0,230,32,0.3)]'
+                  : 'bg-[#111111] border-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              <tab.icon size={18} weight={aba === tab.id ? 'fill' : 'regular'} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={aba}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
           >
-            <tab.icon size={18} weight={aba === tab.id ? 'fill' : 'regular'} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+            {aba === 'treinos' && (
+              <AbaTreinosAlunos onCriarPlano={() => setCriadorAberto(true)} />
+            )}
+            {aba === 'biblioteca' && <AbaBiblioteca />}
+            {aba === 'templates' && <AbaTemplates />}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
 
-      {/* Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={aba}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        >
-          {aba === 'treinos' && <AbaTreinosAlunos />}
-          {aba === 'biblioteca' && <AbaBiblioteca />}
-          {aba === 'templates' && <AbaTemplates />}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+      {/* Criador de Plano (full-screen wizard) */}
+      {criadorAberto && (
+        <CriadorPlano
+          onSalvar={handleSalvarPlano}
+          onFechar={() => setCriadorAberto(false)}
+        />
+      )}
+    </>
   )
 }

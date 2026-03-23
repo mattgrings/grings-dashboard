@@ -19,6 +19,8 @@ import {
   ForkKnife,
   ChartLineUp,
   Calculator,
+  ChatsCircle,
+  Ruler,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -34,6 +36,7 @@ const adminNav = [
   { path: '/captacoes', icon: Funnel, label: 'Captações' },
   { path: '/relatorios', icon: ChartBar, label: 'Relatórios' },
   { path: '/feedbacks', icon: ChatText, label: 'Feedbacks' },
+  { path: '/chat', icon: ChatsCircle, label: 'Chat' },
   { path: '/configuracoes', icon: Gear, label: 'Configurações' },
 ]
 
@@ -43,8 +46,10 @@ const alunoNav = [
   { path: '/aluno/dieta', icon: ForkKnife, label: 'Dieta' },
   { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
   { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
+  { path: '/aluno/medidas', icon: Ruler, label: 'Medidas' },
   { path: '/aluno/calculadoras', icon: Calculator, label: 'Calculadoras' },
   { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
+  { path: '/aluno/chat', icon: ChatsCircle, label: 'Chat' },
 ]
 
 export default function FloatingMenuButton() {

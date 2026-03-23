@@ -14,6 +14,7 @@ import SocialSelling from './pages/SocialSelling'
 import Frequencia from './pages/Frequencia'
 import Feedbacks from './pages/Feedbacks'
 import Treinos from './pages/Treinos'
+import Chat from './pages/Chat'
 import Configuracoes from './pages/Configuracoes'
 import AlunoDashboard from './pages/aluno/AlunoDashboard'
 import AlunoTreino from './pages/aluno/AlunoTreino'
@@ -22,6 +23,7 @@ import AlunoEvolucao from './pages/aluno/AlunoEvolucao'
 import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
 import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import AlunoFeedback from './pages/aluno/AlunoFeedback'
+import AlunoMedidas from './pages/aluno/AlunoMedidas'
 import Login from './pages/Login'
 import { useAuthStore } from './store/authStore'
 import InstallPrompt from './components/ui/InstallPrompt'
@@ -57,6 +59,8 @@ export default function App() {
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
               <Route path="feedback" element={<AlunoFeedback />} />
+              <Route path="medidas" element={<AlunoMedidas />} />
+              <Route path="chat" element={<Chat />} />
             </Route>
             <Route path="*" element={<Navigate to="/aluno" replace />} />
           </>
@@ -75,6 +79,7 @@ export default function App() {
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/feedbacks" element={<Feedbacks />} />
               <Route path="/treinos" element={<Treinos />} />
+              <Route path="/chat" element={<Chat />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
             {/* Aluno routes also accessible for admin */}
@@ -86,6 +91,8 @@ export default function App() {
               <Route path="frequencia" element={<AlunoFrequencia />} />
               <Route path="calculadoras" element={<AlunoCalculadoras />} />
               <Route path="feedback" element={<AlunoFeedback />} />
+              <Route path="medidas" element={<AlunoMedidas />} />
+              <Route path="chat" element={<Chat />} />
             </Route>
           </>
         )}
