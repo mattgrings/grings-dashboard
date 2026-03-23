@@ -19,6 +19,7 @@ import InputGlow from '../components/ui/InputGlow'
 import FotoPerfilUpload from '../components/ui/FotoPerfilUpload'
 import GradienteHeader from '../components/ui/GradienteHeader'
 import { useAuthStore } from '../store/authStore'
+import { useAlunosStore } from '../store/alunosStore'
 
 type Aba = 'perfil' | 'contas' | 'notificacoes' | 'banco' | 'perigo'
 
@@ -121,10 +122,10 @@ function AbaPerfilAdmin() {
 }
 
 function AbaGestaoContas() {
-  const users = useAuthStore((s) => s.users)
+  const alunosData = useAlunosStore((s) => s.alunos)
   const [copiado, setCopiado] = useState('')
 
-  const alunos = users.filter((u) => u.role === 'aluno')
+  const alunos = alunosData.filter((a) => a.status === 'ativo')
 
   const gerarCodigo = () => {
     const codigo = crypto.randomUUID().slice(0, 8).toUpperCase()
@@ -168,19 +169,19 @@ function AbaGestaoContas() {
       )}
 
       <div className="space-y-2">
-        {alunos.map((u) => (
+        {alunos.map((a) => (
           <div
-            key={u.id}
+            key={a.id}
             className="bg-[#141414] border border-white/5 rounded-xl p-3
                        flex items-center gap-3"
           >
             <div className="w-9 h-9 rounded-full bg-[#00E620]/10 flex items-center justify-center
                             text-[#00E620] text-xs font-bold">
-              {u.nome.slice(0, 2).toUpperCase()}
+              {a.nome.slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium">{u.nome}</p>
-              <p className="text-xs text-gray-500">{u.email}</p>
+              <p className="text-sm text-white font-medium">{a.nome}</p>
+              <p className="text-xs text-gray-500">{a.email ?? a.telefone}</p>
             </div>
             <span className="px-2 py-0.5 text-[10px] bg-[#00E620]/10 text-[#00E620] rounded-full">
               Ativo

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+// recharts removed — macros calculator removed
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -12,9 +12,8 @@ const cardVariants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } },
 }
 
-type TabKey = 'imc' | 'tmb' | 'macros' | 'gordura'
+type TabKey = 'imc' | 'tmb' | 'gordura'
 type Sexo = 'masculino' | 'feminino'
-type Objetivo = 'emagrecer' | 'manter' | 'ganhar'
 
 interface IMCResult {
   value: number
@@ -31,8 +30,7 @@ interface TMBResult {
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'imc', label: 'IMC' },
-  { key: 'tmb', label: 'TMB/GCT' },
-  { key: 'macros', label: 'Macros' },
+  { key: 'tmb', label: 'Calorias' },
   { key: 'gordura', label: '% Gordura' },
 ]
 
@@ -65,17 +63,6 @@ function getIMCPercent(imc: number): number {
   return ((clamped - 10) / 35) * 100
 }
 
-const macroDistributions: Record<Objetivo, { prot: number; carb: number; fat: number }> = {
-  emagrecer: { prot: 0.35, carb: 0.35, fat: 0.30 },
-  manter: { prot: 0.25, carb: 0.45, fat: 0.30 },
-  ganhar: { prot: 0.30, carb: 0.50, fat: 0.20 },
-}
-
-const MACRO_COLORS = {
-  prot: '#F87171',
-  carb: '#FACC15',
-  fat: '#60A5FA',
-}
 
 const bodyFatRangesMen = [
   { label: '8-10%', midpoint: 9 },
@@ -236,7 +223,7 @@ function TabIMC() {
 
 // ==================== TAB 2: TMB/GCT ====================
 
-function TabTMB({ onGCTCalculated }: { onGCTCalculated: (gct: number) => void }) {
+function TabTMB() {
   const [peso, setPeso] = useState('')
   const [altura, setAltura] = useState('')
   const [idade, setIdade] = useState('')
@@ -264,7 +251,6 @@ function TabTMB({ onGCTCalculated }: { onGCTCalculated: (gct: number) => void })
       emagrecer: Math.round(gct - 500),
       ganhar: Math.round(gct + 300),
     })
-    onGCTCalculated(Math.round(gct))
   }
 
   return (
@@ -366,217 +352,7 @@ function TabTMB({ onGCTCalculated }: { onGCTCalculated: (gct: number) => void })
   )
 }
 
-// ==================== TAB 3: MACROS ====================
-
-function TabMacros({ savedGCT }: { savedGCT: number | null }) {
-  const [calorias, setCalorias] = useState('')
-  const [objetivo, setObjetivo] = useState<Objetivo>('manter')
-  const [calculated, setCalculated] = useState(false)
-
-  const calValue = parseFloat(calorias) || 0
-  const dist = macroDistributions[objetivo]
-
-  const protGrams = Math.round((calValue * dist.prot) / 4)
-  const carbGrams = Math.round((calValue * dist.carb) / 4)
-  const fatGrams = Math.round((calValue * dist.fat) / 9)
-
-  const protCal = Math.round(calValue * dist.prot)
-  const carbCal = Math.round(calValue * dist.carb)
-  const fatCal = Math.round(calValue * dist.fat)
-
-  const chartData = [
-    { name: 'Proteina', value: dist.prot * 100 },
-    { name: 'Carboidrato', value: dist.carb * 100 },
-    { name: 'Gordura', value: dist.fat * 100 },
-  ]
-
-  const pieColors = [MACRO_COLORS.prot, MACRO_COLORS.carb, MACRO_COLORS.fat]
-
-  const handleCalc = () => {
-    if (calValue > 0) setCalculated(true)
-  }
-
-  const handleUseGCT = () => {
-    if (savedGCT) {
-      setCalorias(savedGCT.toString())
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1.5">Calorias alvo</label>
-          <div className="flex gap-3">
-            <input
-              type="number"
-              value={calorias}
-              onChange={(e) => {
-                setCalorias(e.target.value)
-                setCalculated(false)
-              }}
-              placeholder="Ex: 2000"
-              className="flex-1 bg-[#111111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#00E620]/50 focus:ring-2 focus:ring-[#00E620]/20"
-            />
-            {savedGCT && (
-              <button
-                type="button"
-                onClick={handleUseGCT}
-                className="whitespace-nowrap bg-[#111111] border border-white/10 text-gray-400 hover:text-white rounded-xl px-4 py-3 text-sm transition-colors"
-              >
-                Usar GCT ({savedGCT})
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Objetivo */}
-        <div>
-          <label className="block text-sm text-gray-400 mb-1.5">Objetivo</label>
-          <div className="flex gap-2">
-            {(
-              [
-                { key: 'emagrecer' as Objetivo, label: 'Emagrecer' },
-                { key: 'manter' as Objetivo, label: 'Manter' },
-                { key: 'ganhar' as Objetivo, label: 'Ganhar Massa' },
-              ] as const
-            ).map((o) => (
-              <button
-                key={o.key}
-                type="button"
-                onClick={() => {
-                  setObjetivo(o.key)
-                  setCalculated(false)
-                }}
-                className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  objetivo === o.key
-                    ? 'bg-[#00E620] text-black'
-                    : 'bg-[#111111] text-gray-400 border border-white/10 hover:text-white'
-                }`}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={handleCalc}
-        className="bg-[#00E620] text-black font-semibold rounded-xl px-6 py-3 hover:bg-[#00E620]/90 transition-colors text-sm"
-      >
-        Calcular Macros
-      </button>
-
-      <AnimatePresence>
-        {calculated && calValue > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="space-y-6"
-          >
-            {/* Donut Chart */}
-            <div className="bg-[#111111] border border-white/5 rounded-xl p-4">
-              <div className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {chartData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={pieColors[index]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex justify-center gap-6 mt-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: MACRO_COLORS.prot }}
-                  />
-                  <span className="text-xs text-gray-400">Proteina</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: MACRO_COLORS.carb }}
-                  />
-                  <span className="text-xs text-gray-400">Carboidrato</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: MACRO_COLORS.fat }}
-                  />
-                  <span className="text-xs text-gray-400">Gordura</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="bg-[#111111] border border-white/5 rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nutriente
-                    </th>
-                    <th className="text-center px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      %
-                    </th>
-                    <th className="text-center px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Gramas
-                    </th>
-                    <th className="text-center px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Calorias
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-white/5">
-                    <td className="px-5 py-3 text-red-400 font-medium">Proteina</td>
-                    <td className="px-5 py-3 text-center text-white">
-                      {Math.round(dist.prot * 100)}%
-                    </td>
-                    <td className="px-5 py-3 text-center text-white">{protGrams}g</td>
-                    <td className="px-5 py-3 text-center text-white">{protCal} kcal</td>
-                  </tr>
-                  <tr className="border-b border-white/5">
-                    <td className="px-5 py-3 text-yellow-400 font-medium">Carboidrato</td>
-                    <td className="px-5 py-3 text-center text-white">
-                      {Math.round(dist.carb * 100)}%
-                    </td>
-                    <td className="px-5 py-3 text-center text-white">{carbGrams}g</td>
-                    <td className="px-5 py-3 text-center text-white">{carbCal} kcal</td>
-                  </tr>
-                  <tr>
-                    <td className="px-5 py-3 text-blue-400 font-medium">Gordura</td>
-                    <td className="px-5 py-3 text-center text-white">
-                      {Math.round(dist.fat * 100)}%
-                    </td>
-                    <td className="px-5 py-3 text-center text-white">{fatGrams}g</td>
-                    <td className="px-5 py-3 text-center text-white">{fatCal} kcal</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-// ==================== TAB 4: % GORDURA ====================
+// ==================== TAB 3: % GORDURA ====================
 
 function TabGordura() {
   const [sexo, setSexo] = useState<Sexo>('masculino')
@@ -679,7 +455,6 @@ function TabGordura() {
 
 export default function AlunoCalculadoras() {
   const [activeTab, setActiveTab] = useState<TabKey>('imc')
-  const [savedGCT, setSavedGCT] = useState<number | null>(null)
 
   return (
     <motion.div
@@ -723,8 +498,7 @@ export default function AlunoCalculadoras() {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'imc' && <TabIMC />}
-            {activeTab === 'tmb' && <TabTMB onGCTCalculated={setSavedGCT} />}
-            {activeTab === 'macros' && <TabMacros savedGCT={savedGCT} />}
+            {activeTab === 'tmb' && <TabTMB />}
             {activeTab === 'gordura' && <TabGordura />}
           </motion.div>
         </AnimatePresence>

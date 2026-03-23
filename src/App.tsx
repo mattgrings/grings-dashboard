@@ -24,19 +24,44 @@ import AlunoCalculadoras from './pages/aluno/AlunoCalculadoras'
 import AlunoFrequencia from './pages/aluno/AlunoFrequencia'
 import AlunoFeedback from './pages/aluno/AlunoFeedback'
 import Login from './pages/Login'
+import AuthCallback from './pages/AuthCallback'
 import { useAuthStore } from './store/authStore'
 import InstallPrompt from './components/ui/InstallPrompt'
+import Logo from './components/ui/Logo'
+import GreenLedBackground from './components/ui/GreenLedBackground'
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
+  const carregando = useAuthStore((s) => s.carregando)
+
+  // Loading screen enquanto verifica sessão
+  if (carregando) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center relative">
+        <GreenLedBackground />
+        <div className="text-center space-y-4 relative z-10">
+          <Logo size="lg" animated />
+          <p className="text-gray-600 text-sm animate-pulse">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return (
-      <>
-        <Login />
-        <InstallPrompt />
-      </>
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route
+          path="*"
+          element={
+            <>
+              <Login />
+              <InstallPrompt />
+            </>
+          }
+        />
+      </Routes>
     )
   }
 
@@ -47,6 +72,9 @@ export default function App() {
       <ScrollRestoration />
       <InstallPrompt />
       <Routes>
+        {/* OAuth callback — redireciona depois de login */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
         {isAluno ? (
           <>
             {/* Aluno routes */}

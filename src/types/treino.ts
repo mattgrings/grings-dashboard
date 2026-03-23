@@ -17,6 +17,8 @@ export interface ExercicioCompleto {
   dicas: string
   errosComuns: string
   linkVideo?: string
+  gifUrl?: string
+  gifBase64?: string
   musculosSecundarios?: string
   custom: boolean
   criadoEm: string

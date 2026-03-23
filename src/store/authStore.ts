@@ -1,119 +1,175 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import type { User } from '../types'
-import { jsonStorage } from '../lib/storage'
+import { supabase } from '../lib/supabase'
+
+export interface Perfil {
+  id: string
+  nome: string
+  email: string
+  telefone: string | null
+  instagram: string | null
+  foto_url: string | null
+  perfil: 'admin' | 'aluno'
+  ativo: boolean
+  aluno_id: string | null
+  plano: string | null
+  data_inicio: string | null
+  data_vencimento: string | null
+  objetivo: string | null
+  observacoes: string | null
+  criado_em: string
+  atualizado_em: string
+}
+
+// Interface de compatibilidade — o resto do app usa user.role, user.nome, etc.
+export interface AppUser {
+  id: string
+  nome: string
+  email: string
+  role: 'admin' | 'aluno'
+  avatar?: string
+  telefone?: string
+  instagram?: string
+}
 
 interface AuthState {
-  user: Omit<User, 'senha'> | null
-  users: User[]
+  user: AppUser | null
+  perfil: Perfil | null
   isAuthenticated: boolean
-  login: (email: string, senha: string) => boolean
+  carregando: boolean
+
+  login: (email: string, senha: string) => Promise<void>
+  loginComGoogle: () => Promise<void>
+  loginComApple: () => Promise<void>
   logout: () => void
-  register: (data: Omit<User, 'id'>) => boolean
+  carregarPerfil: () => Promise<void>
 }
 
-const defaultAdmin: User = {
-  id: 'admin-001',
-  nome: 'Grings Team',
-  email: 'admin@grings.com',
-  senha: 'admin123',
-  role: 'admin',
+function perfilToAppUser(perfil: Perfil): AppUser {
+  return {
+    id: perfil.id,
+    nome: perfil.nome,
+    email: perfil.email,
+    role: perfil.perfil,
+    avatar: perfil.foto_url ?? undefined,
+    telefone: perfil.telefone ?? undefined,
+    instagram: perfil.instagram ?? undefined,
+  }
 }
 
-const defaultAlunos: User[] = [
-  {
-    id: 'aluno-1',
-    nome: 'Ana Beatriz',
-    email: 'ana@aluno.com',
-    senha: 'ana123',
-    role: 'aluno' as const,
-  },
-  {
-    id: 'aluno-2',
-    nome: 'Pedro Henrique',
-    email: 'pedro@aluno.com',
-    senha: 'pedro123',
-    role: 'aluno' as const,
-  },
-]
+export const useAuthStore = create<AuthState>()((set, get) => ({
+  user: null,
+  perfil: null,
+  isAuthenticated: false,
+  carregando: true,
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      users: [defaultAdmin, ...defaultAlunos],
-      isAuthenticated: false,
+  carregarPerfil: async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        set({ user: null, perfil: null, isAuthenticated: false, carregando: false })
+        return
+      }
 
-      login: (email, senha) => {
-        // Check persisted users first, then fallback to defaults
-        const allUsers = [
-          ...get().users,
-          defaultAdmin,
-          ...defaultAlunos,
-        ]
-        const found = allUsers.find(
-          (u) => u.email === email && u.senha === senha
-        )
-        if (!found) return false
+      const { data: perfil } = await supabase
+        .from('perfis')
+        .select('*')
+        .eq('id', user.id)
+        .single()
 
-        // Ensure this user is in the persisted list
-        const currentUsers = get().users
-        if (!currentUsers.some((u) => u.id === found.id)) {
-          set((s) => ({ users: [...s.users, found] }))
+      if (perfil) {
+        set({
+          user: perfilToAppUser(perfil as Perfil),
+          perfil: perfil as Perfil,
+          isAuthenticated: true,
+          carregando: false,
+        })
+      } else {
+        // Perfil não existe ainda (pode acontecer com OAuth novo)
+        // Cria perfil básico
+        const novoPerfil: Partial<Perfil> = {
+          id: user.id,
+          nome: user.user_metadata?.full_name ?? user.email ?? 'Usuário',
+          email: user.email ?? '',
+          perfil: 'aluno',
+          ativo: true,
         }
+        await supabase.from('perfis').upsert(novoPerfil)
 
-        const { senha: _, ...userWithoutSenha } = found
-        set({ user: userWithoutSenha, isAuthenticated: true })
-        return true
-      },
+        const perfilCompleto = {
+          ...novoPerfil,
+          telefone: null,
+          instagram: null,
+          foto_url: null,
+          aluno_id: null,
+          plano: null,
+          data_inicio: null,
+          data_vencimento: null,
+          objetivo: null,
+          observacoes: null,
+          criado_em: new Date().toISOString(),
+          atualizado_em: new Date().toISOString(),
+        } as Perfil
 
-      logout: () => {
-        set({ user: null, isAuthenticated: false })
-        // Clear auth data from localStorage
-        try {
-          localStorage.removeItem('grings-auth')
-        } catch {
-          // ignore
-        }
-      },
-
-      register: (data) => {
-        const exists = get().users.some((u) => u.email === data.email)
-        if (exists) return false
-
-        const newUser: User = {
-          ...data,
-          id: crypto.randomUUID(),
-        }
-        set((state) => ({ users: [...state.users, newUser] }))
-        return true
-      },
-    }),
-    {
-      name: 'grings-auth',
-      storage: createJSONStorage(() => jsonStorage),
-      partialize: (state) => ({
-        user: state.user,
-        users: state.users,
-        isAuthenticated: state.isAuthenticated,
-      }),
-      merge: (persisted, current) => {
-        const p = persisted as Partial<AuthState> | undefined
-        const persistedUsers = p?.users ?? []
-        const allDefaults = [defaultAdmin, ...defaultAlunos]
-        // Ensure default users always exist (merge with any registered users)
-        const merged = [...allDefaults]
-        for (const u of persistedUsers) {
-          if (!merged.some((m) => m.id === u.id)) {
-            merged.push(u)
-          }
-        }
-        return {
-          ...current,
-          ...p,
-          users: merged,
-        }
-      },
+        set({
+          user: perfilToAppUser(perfilCompleto),
+          perfil: perfilCompleto,
+          isAuthenticated: true,
+          carregando: false,
+        })
+      }
+    } catch {
+      set({ user: null, perfil: null, isAuthenticated: false, carregando: false })
     }
-  )
-)
+  },
+
+  login: async (email, senha) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    })
+    if (error) throw new Error(error.message)
+    await get().carregarPerfil()
+  },
+
+  loginComGoogle: async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) throw new Error(error.message)
+  },
+
+  loginComApple: async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) throw new Error(error.message)
+  },
+
+  logout: () => {
+    set({ user: null, perfil: null, isAuthenticated: false })
+    supabase.auth.signOut()
+    // Limpar dados do localStorage
+    try {
+      localStorage.removeItem('grings-auth')
+    } catch {
+      // ignore
+    }
+  },
+}))
+
+// Ouvir mudanças de sessão em tempo real
+supabase.auth.onAuthStateChange(async (event) => {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    await useAuthStore.getState().carregarPerfil()
+  }
+  if (event === 'SIGNED_OUT') {
+    useAuthStore.setState({ user: null, perfil: null, isAuthenticated: false })
+  }
+})
+
+// Carregar perfil ao iniciar
+useAuthStore.getState().carregarPerfil()

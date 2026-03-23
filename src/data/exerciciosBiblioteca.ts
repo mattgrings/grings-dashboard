@@ -10,6 +10,8 @@ export interface ExercicioBiblioteca {
   equipamento: 'barra' | 'halteres' | 'maquina' | 'cabo' | 'peso_corpo' | 'outro'
   instrucoes?: string
   linkVideo?: string
+  gifUrl?: string
+  gifBase64?: string
   dificuldade: 'iniciante' | 'intermediario' | 'avancado'
   criadoEm: string
 }
