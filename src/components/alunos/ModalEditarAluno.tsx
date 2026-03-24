@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Calculator, Pencil, X } from '@phosphor-icons/react'
+import { Calculator } from '@phosphor-icons/react'
 import BottomSheet from '../ui/BottomSheet'
 import type { Aluno } from '../../types'
 
