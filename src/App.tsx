@@ -33,6 +33,7 @@ import { carregarDadosDoServidor, iniciarSync, pararSync } from './lib/syncStore
 import InstallPrompt from './components/ui/InstallPrompt'
 import Logo from './components/ui/Logo'
 import GreenLedBackground from './components/ui/GreenLedBackground'
+import ToastDesfazer from './components/ui/ToastDesfazer'
 
 /* ───────── SplashScreen ───────── */
 function SplashScreen() {
@@ -128,6 +129,7 @@ export default function App() {
     <ToastProvider>
       <ScrollRestoration />
       <InstallPrompt />
+      <ToastDesfazer />
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/redefinir-senha" element={<RedefinirSenha />} />
