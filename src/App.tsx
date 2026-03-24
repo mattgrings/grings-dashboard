@@ -29,6 +29,7 @@ import Login from './pages/Login'
 import RedefinirSenha from './pages/RedefinirSenha'
 import AuthCallback from './pages/AuthCallback'
 import { useAuthStore } from './store/authStore'
+import { carregarDadosDoServidor, iniciarSync, pararSync } from './lib/syncStores'
 import InstallPrompt from './components/ui/InstallPrompt'
 import Logo from './components/ui/Logo'
 import GreenLedBackground from './components/ui/GreenLedBackground'
@@ -55,10 +56,40 @@ export default function App() {
 
   // Safety timeout — nunca trava no splash por mais de 4s
   const [forcarSaida, setForcarSaida] = useState(false)
+  const [dadosCarregados, setDadosCarregados] = useState(false)
 
   useEffect(() => {
     inicializar()
   }, [inicializar])
+
+  // Após auth inicializar, carregar dados do Supabase e iniciar sync
+  useEffect(() => {
+    if (!inicializado || !isAuthenticated || !user?.id) {
+      if (inicializado && !isAuthenticated) {
+        pararSync()
+        setDadosCarregados(true)
+      }
+      return
+    }
+
+    let cancelado = false
+
+    const carregar = async () => {
+      try {
+        await carregarDadosDoServidor(user.id)
+        iniciarSync(user.id)
+      } catch (err) {
+        console.warn('[App] Erro ao sincronizar dados:', err)
+      }
+      if (!cancelado) setDadosCarregados(true)
+    }
+
+    carregar()
+
+    return () => {
+      cancelado = true
+    }
+  }, [inicializado, isAuthenticated, user?.id])
 
   useEffect(() => {
     if (inicializado) return
@@ -66,8 +97,8 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [inicializado])
 
-  // Mostra splash até inicializar (ou timeout)
-  if (!inicializado && !forcarSaida) {
+  // Mostra splash até inicializar + carregar dados (ou timeout)
+  if ((!inicializado || (isAuthenticated && !dadosCarregados)) && !forcarSaida) {
     return <SplashScreen />
   }
 

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { salvarTudoAgora, pararSync } from '../lib/syncStores'
 
 /* ───────── tipos ───────── */
 export interface Perfil {
@@ -169,7 +170,18 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
+    // Salvar tudo no Supabase antes de limpar
+    const userId = get().user?.id
+    if (userId) {
+      try {
+        await salvarTudoAgora(userId)
+      } catch {
+        // ignore — não bloqueia logout
+      }
+    }
+
+    pararSync()
     set({ user: null, perfil: null, isAuthenticated: false })
     supabase.auth.signOut()
     try {
