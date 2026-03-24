@@ -5,12 +5,13 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   ArrowLeft, Camera, Barbell, ForkKnife, Plus, Trash, CalendarBlank,
-  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key,
+  InstagramLogo, Phone, EnvelopeSimple, User, ImageSquare, Key, Pencil,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import { usePlanoTreinoStore } from '../store/planoTreinoStore'
 import { useToast } from '../components/ui/Toast'
 import ModalAcessoApp from '../components/alunos/ModalAcessoApp'
+import ModalEditarAluno from '../components/alunos/ModalEditarAluno'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import type {
@@ -54,6 +55,7 @@ export default function PerfilAluno() {
   const [expandedPlano, setExpandedPlano] = useState<string | null>(null)
   const [expandedDieta, setExpandedDieta] = useState<string | null>(null)
   const [modalAcessoAberto, setModalAcessoAberto] = useState(false)
+  const [modalEditarAberto, setModalEditarAberto] = useState(false)
 
   // Foto form
   const fileRef = useRef<HTMLInputElement>(null)
@@ -169,10 +171,20 @@ export default function PerfilAluno() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      {/* Back button */}
-      <button onClick={() => navigate('/alunos')} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
-        <ArrowLeft size={16} /> Voltar para Alunos
-      </button>
+      {/* Back button + Edit */}
+      <div className="flex items-center justify-between">
+        <button onClick={() => navigate('/alunos')} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+          <ArrowLeft size={16} /> Voltar para Alunos
+        </button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setModalEditarAberto(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 text-gray-400 text-sm hover:text-white hover:border-brand-green/30 transition-all touch-manipulation"
+        >
+          <Pencil size={14} />
+          Editar Perfil
+        </motion.button>
+      </div>
 
       {/* Profile Header */}
       <div className="bg-surface/50 backdrop-blur-md border border-white/5 rounded-card p-6">
@@ -831,6 +843,20 @@ export default function PerfilAluno() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal Editar Aluno */}
+      <ModalEditarAluno
+        aberto={modalEditarAberto}
+        aluno={aluno}
+        onFechar={() => setModalEditarAberto(false)}
+        onSalvo={(dadosAtualizados) => {
+          if (id) {
+            useAlunosStore.getState().updateAluno(id, dadosAtualizados)
+            showToast('Perfil atualizado!')
+          }
+          setModalEditarAberto(false)
+        }}
+      />
     </motion.div>
   )
 }
