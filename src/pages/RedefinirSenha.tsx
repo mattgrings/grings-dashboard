@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Lock, Eye, EyeSlash, Warning, CheckCircle } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import GreenLedBackground from '../components/ui/GreenLedBackground'
-import TrevoLogo from '../components/ui/TrevoLogo'
+import Logo from '../components/ui/Logo'
 
 export default function RedefinirSenha() {
   const navigate = useNavigate()
@@ -55,7 +55,7 @@ export default function RedefinirSenha() {
       >
         <div className="bg-white/[0.03] backdrop-blur-xl border border-[#00E620]/20 rounded-3xl p-8 shadow-[0_0_80px_rgba(0,230,32,0.08)]">
           <div className="flex justify-center mb-8">
-            <TrevoLogo />
+            <Logo size="lg" />
           </div>
 
           {sucesso ? (
