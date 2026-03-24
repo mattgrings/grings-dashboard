@@ -190,7 +190,7 @@ export default function AlunoEvolucao() {
       mensagem: `${alunoData?.nome} enviou uma nova foto de evolucao`,
       aluno_id: alunoId,
       lida: false,
-    }).catch(() => {})
+    })
 
     setEnviandoFoto(false)
     carregarFotos()
