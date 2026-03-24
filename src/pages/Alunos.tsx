@@ -7,9 +7,12 @@ import {
   Plus, MagnifyingGlass, FunnelSimple, Barbell, Heart,
   TrendUp, FirstAid, Lightning, Pencil, Trash, Warning,
   Eye, EyeSlash, ArrowsClockwise, CheckCircle, Key,
+  CalendarBlank, DownloadSimple, Timer,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
+import { useAgendaStore } from '../store/agendaStore'
 import { criarContaAluno, calcularForcaSenha } from '../lib/criarContaAluno'
+import { alunosNotion } from '../lib/importarNotion'
 import ModalAcessoApp from '../components/alunos/ModalAcessoApp'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -65,6 +68,8 @@ export default function Alunos() {
   const deleteAluno = useAlunosStore((s) => s.deleteAluno)
   const fotos = useAlunosStore((s) => s.fotos)
   const treinos = useAlunosStore((s) => s.treinos)
+  const addEvento = useAgendaStore((s) => s.addEvento)
+  const eventos = useAgendaStore((s) => s.eventos)
   const { showToast } = useToast()
 
   const [showForm, setShowForm] = useState(false)
@@ -74,6 +79,63 @@ export default function Alunos() {
   const [filterStatus, setFilterStatus] = useState<StatusAluno | ''>('')
   const [filterObjetivo, setFilterObjetivo] = useState<ObjetivoAluno | ''>('')
   const [acessoAluno, setAcessoAluno] = useState<Aluno | null>(null)
+  const [importando, setImportando] = useState(false)
+
+  const handleImportarNotion = () => {
+    setImportando(true)
+    let importados = 0
+    const nomeExistentes = new Set(alunos.map(a => a.nome.trim().toLowerCase()))
+
+    for (const an of alunosNotion) {
+      if (!an.nome || nomeExistentes.has(an.nome.trim().toLowerCase())) continue
+
+      const statusMap: Record<string, StatusAluno> = {
+        'Ativo': 'ativo', 'Pendente': 'pausado', 'Ferias': 'pausado',
+        'Atestado': 'pausado', 'Não iniciada': 'ativo',
+      }
+
+      const novoId = addAluno({
+        nome: an.nome.trim(),
+        telefone: '',
+        objetivo: 'saude',
+        status: statusMap[an.statusPlano] || 'ativo',
+        dataInicio: an.dataRenovacao ? new Date(an.dataRenovacao) : new Date(),
+        plano: an.plano,
+        statusPlano: an.statusPlano,
+        tipoProtocolo: an.tipoProtocolo,
+        situacaoProtocolo: an.situacaoProtocolo,
+        vencimento: an.vencimento,
+        dataRenovacao: an.dataRenovacao,
+        notionPageId: an.notionPageId,
+      })
+
+      // Criar evento de vencimento na agenda se tem data
+      if (an.vencimento && novoId) {
+        const jaExiste = eventos.some(e =>
+          e.tipo === 'vencimento_plano' && e.data === an.vencimento
+          && e.titulo.includes(an.nome.trim().split(' ')[0])
+        )
+        if (!jaExiste) {
+          addEvento({
+            titulo: `Vence plano: ${an.nome.trim()}`,
+            descricao: `Plano ${an.plano} — ${an.tipoProtocolo || 'N/A'}`,
+            tipo: 'vencimento_plano',
+            status: 'pendente',
+            data: an.vencimento,
+          })
+        }
+      }
+
+      importados++
+    }
+
+    setImportando(false)
+    if (importados > 0) {
+      showToast(`${importados} alunos importados do Notion!`)
+    } else {
+      showToast('Nenhum aluno novo para importar (todos já existem).')
+    }
+  }
 
   // Form state
   const [nome, setNome] = useState('')
@@ -230,10 +292,16 @@ export default function Alunos() {
             {alunos.filter((a) => a.status === 'ativo').length} ativos de {alunos.length} total
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus size={16} weight="bold" />
-          Novo Aluno
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={handleImportarNotion} disabled={importando}>
+            {importando ? <ArrowsClockwise size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
+            Importar Notion
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus size={16} weight="bold" />
+            Novo Aluno
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -323,15 +391,39 @@ export default function Alunos() {
                   </div>
 
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
-                      <Icon size={13} className="text-brand-green" />
-                      <span className="text-[11px] text-gray-400">{objetivoLabels[aluno.objetivo]}</span>
-                    </div>
-                    {aluno.pesoInicial && (
-                      <div className="px-2.5 py-1 bg-white/[0.03] rounded-lg">
-                        <span className="text-[11px] text-gray-400">{aluno.pesoInicial}kg</span>
+                    {aluno.plano && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 rounded-lg">
+                        <span className="text-[11px] text-purple-400 font-medium">{aluno.plano}</span>
                       </div>
                     )}
+                    {aluno.tipoProtocolo && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
+                        <Icon size={13} className="text-brand-green" />
+                        <span className="text-[11px] text-gray-400">{aluno.tipoProtocolo}</span>
+                      </div>
+                    )}
+                    {!aluno.plano && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] rounded-lg">
+                        <Icon size={13} className="text-brand-green" />
+                        <span className="text-[11px] text-gray-400">{objetivoLabels[aluno.objetivo]}</span>
+                      </div>
+                    )}
+                    {aluno.situacaoProtocolo?.map((sit) => {
+                      const sitColors: Record<string, string> = {
+                        'Entregue': 'bg-green-500/15 text-green-400',
+                        'Em andamento': 'bg-blue-500/15 text-blue-400',
+                        'Chamar': 'bg-purple-500/15 text-purple-400',
+                        'Pedir Atualização': 'bg-orange-500/15 text-orange-400',
+                        'ATENÇÃO': 'bg-red-500/15 text-red-400',
+                        'Não iniciada': 'bg-gray-500/15 text-gray-400',
+                        'Observação': 'bg-yellow-500/15 text-yellow-400',
+                      }
+                      return (
+                        <span key={sit} className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${sitColors[sit] || 'bg-white/5 text-gray-400'}`}>
+                          {sit}
+                        </span>
+                      )
+                    })}
                     {/* Badge de acesso ao app */}
                     {aluno.email ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-blue-500/15 text-blue-400">
@@ -350,7 +442,14 @@ export default function Alunos() {
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] text-gray-600 pt-3 border-t border-white/5">
-                    <span>Desde {format(new Date(aluno.dataInicio), "MMM yyyy", { locale: ptBR })}</span>
+                    {aluno.vencimento ? (
+                      <span className={`flex items-center gap-1 ${new Date(aluno.vencimento) < new Date() ? 'text-red-400' : new Date(aluno.vencimento) < new Date(Date.now() + 30 * 86400000) ? 'text-yellow-400' : 'text-gray-500'}`}>
+                        <Timer size={12} />
+                        Vence {format(new Date(aluno.vencimento), "dd/MM/yyyy")}
+                      </span>
+                    ) : (
+                      <span>Desde {format(new Date(aluno.dataInicio), "MMM yyyy", { locale: ptBR })}</span>
+                    )}
                     <div className="flex items-center gap-3">
                       <span>{alunoFotos} fotos</span>
                       <span>{alunoTreinos} treinos</span>

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, MagnifyingGlass, FunnelSimple, Warning } from '@phosphor-icons/react'
 import { useLeadsStore } from '../store/leadsStore'
+import { useAgendaStore } from '../store/agendaStore'
 import { useToast } from '../components/ui/Toast'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -13,6 +14,7 @@ export default function Captacoes() {
   const leads = useLeadsStore((s) => s.leads)
   const updateLead = useLeadsStore((s) => s.updateLead)
   const deleteLead = useLeadsStore((s) => s.deleteLead)
+  const addEvento = useAgendaStore((s) => s.addEvento)
   const { showToast } = useToast()
 
   const [showForm, setShowForm] = useState(false)
@@ -52,7 +54,19 @@ export default function Captacoes() {
     if (!selectedLead || !scheduleDate || !scheduleTime) return
 
     updateLead(selectedLead.id, { status: 'agendado' })
-    showToast(`Contato agendado com ${selectedLead.nome}!`)
+
+    // Criar evento na Agenda automaticamente
+    addEvento({
+      titulo: `Chamada: ${selectedLead.nome}`,
+      descricao: scheduleNotes || `Duração: ${scheduleDuration}min`,
+      tipo: 'chamada',
+      status: 'pendente',
+      data: scheduleDate,
+      horario: scheduleTime,
+      leadId: selectedLead.id,
+    })
+
+    showToast(`Chamada agendada com ${selectedLead.nome}!`)
     setShowSchedule(false)
     setSelectedLead(null)
     setScheduleDate('')

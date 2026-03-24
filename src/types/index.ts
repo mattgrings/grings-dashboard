@@ -57,6 +57,11 @@ export interface Captacao {
 export type StatusAluno = 'ativo' | 'pausado' | 'cancelado'
 export type ObjetivoAluno = 'emagrecimento' | 'hipertrofia' | 'saude' | 'performance' | 'reabilitacao'
 
+export type PlanoAluno = 'Mensal' | 'Trimestral' | 'Semestral' | 'Anual' | 'Personal' | 'Parceria' | 'VERÃO LIGHT'
+export type TipoProtocolo = 'Protocolo Completo' | 'Somente Treino' | 'Somente Dieta' | 'Plano Light'
+export type StatusPlano = 'Ativo' | 'Pendente' | 'Ferias' | 'Atestado' | 'Não iniciada'
+export type SituacaoProtocolo = 'Entregue' | 'Em andamento' | 'Chamar' | 'Pedir Atualização' | 'ATENÇÃO' | 'Fez sinal' | 'Observação' | 'Não iniciada' | 'VERÃO LIGHT'
+
 export interface Aluno {
   id: string
   nome: string
@@ -70,6 +75,15 @@ export interface Aluno {
   observacoes?: string
   pesoInicial?: number
   alturaM?: number
+  // Campos do Notion
+  plano?: PlanoAluno
+  statusPlano?: StatusPlano
+  tipoProtocolo?: TipoProtocolo
+  situacaoProtocolo?: SituacaoProtocolo[]
+  vencimento?: string // ISO date
+  dataRenovacao?: string // ISO date
+  dataAtualizacaoProtocolo?: string // ISO date
+  notionPageId?: string
   criadoEm: Date
   atualizadoEm: Date
 }
