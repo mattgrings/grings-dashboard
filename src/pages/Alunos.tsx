@@ -7,7 +7,7 @@ import {
   Plus, MagnifyingGlass, FunnelSimple, Barbell, Heart,
   TrendUp, FirstAid, Lightning, Pencil, Trash, Warning,
   Eye, EyeSlash, ArrowsClockwise, CheckCircle, Key,
-  CalendarBlank, DownloadSimple, Timer,
+  DownloadSimple, Timer,
 } from '@phosphor-icons/react'
 import { useAlunosStore } from '../store/alunosStore'
 import { useAgendaStore } from '../store/agendaStore'
