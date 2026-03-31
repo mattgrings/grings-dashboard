@@ -288,7 +288,6 @@ function CardConteudo({
 }) {
   const [menuAberto, setMenuAberto] = useState(false)
   const p = plataformaConfig[conteudo.plataforma]
-  const PlatIcon = p.icon
 
   return (
     <motion.div
