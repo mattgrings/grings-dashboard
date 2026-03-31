@@ -11,13 +11,10 @@ import {
   CaretRight,
   SignOut,
   Megaphone,
-  CalendarCheck,
   CalendarDots,
-  ChatText,
   Gear,
   Funnel,
   Users,
-  ChatsCircle,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -29,12 +26,9 @@ const navItems = [
   { to: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
   { to: '/agenda', icon: CalendarDots, label: 'Agenda' },
   { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
-  { to: '/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { to: '/social', icon: Megaphone, label: 'Social' },
   { to: '/captacoes', icon: Funnel, label: 'Captações' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
-  { to: '/feedbacks', icon: ChatText, label: 'Feedbacks' },
-  { to: '/chat', icon: ChatsCircle, label: 'Chat' },
 ]
 
 export default function Sidebar() {

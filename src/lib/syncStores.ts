@@ -6,10 +6,8 @@ import { useAgendaStore } from '../store/agendaStore'
 import { usePlanoTreinoStore } from '../store/planoTreinoStore'
 import { useTreinoStore } from '../store/treinoStore'
 import { useCargasStore } from '../store/cargasStore'
-import { useChatStore } from '../store/chatStore'
 import { useFeedbackStore } from '../store/feedbackStore'
 import { useFinanceiroStore } from '../store/financeiroStore'
-import { useFrequenciaStore } from '../store/frequenciaStore'
 import { useGamificacaoStore } from '../store/gamificacaoStore'
 import { useLeadsStore } from '../store/leadsStore'
 import { useMedidasStore } from '../store/medidasStore'
@@ -29,10 +27,8 @@ const STORES: StoreEntry[] = [
   ['grings-planos-treino', usePlanoTreinoStore, ['planos', 'exerciciosCustom']],
   ['grings-treinos', useTreinoStore, ['planos', 'exerciciosCustom']],
   ['grings-cargas', useCargasStore, ['registros']],
-  ['grings-chat', useChatStore, ['conversas', 'mensagens']],
   ['grings-feedbacks', useFeedbackStore, ['feedbacks']],
   ['grings-financeiro', useFinanceiroStore, ['meses', 'mesAtualId']],
-  ['grings-frequencia', useFrequenciaStore, ['registros']],
   ['grings-gamificacao', useGamificacaoStore, ['desbloqueadas', 'streaks']],
   ['grings-leads', useLeadsStore, ['leads']],
   ['grings-medidas', useMedidasStore, ['medidas']],

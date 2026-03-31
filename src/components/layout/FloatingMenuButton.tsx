@@ -9,18 +9,12 @@ import {
   Users,
   CurrencyDollar,
   ListChecks,
-  CalendarCheck,
   CalendarDots,
   Megaphone,
   Funnel,
   ChartBar,
-  ChatText,
   Gear,
   SignOut,
-  ForkKnife,
-  ChartLineUp,
-  Calculator,
-  ChatsCircle,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -32,24 +26,10 @@ const adminNav = [
   { path: '/financeiro', icon: CurrencyDollar, label: 'Financeiro' },
   { path: '/agenda', icon: CalendarDots, label: 'Agenda' },
   { path: '/tarefas', icon: ListChecks, label: 'Tarefas' },
-  { path: '/frequencia', icon: CalendarCheck, label: 'Frequência' },
   { path: '/social', icon: Megaphone, label: 'Social Selling' },
   { path: '/captacoes', icon: Funnel, label: 'Captações' },
   { path: '/relatorios', icon: ChartBar, label: 'Relatórios' },
-  { path: '/feedbacks', icon: ChatText, label: 'Feedbacks' },
-  { path: '/chat', icon: ChatsCircle, label: 'Chat' },
   { path: '/configuracoes', icon: Gear, label: 'Configurações' },
-]
-
-const alunoNav = [
-  { path: '/aluno', icon: House, label: 'Início', end: true },
-  { path: '/aluno/treino', icon: Barbell, label: 'Treino' },
-  { path: '/aluno/dieta', icon: ForkKnife, label: 'Dieta' },
-  { path: '/aluno/evolucao', icon: ChartLineUp, label: 'Evolução' },
-  { path: '/aluno/frequencia', icon: CalendarCheck, label: 'Frequência' },
-  { path: '/aluno/calculadoras', icon: Calculator, label: 'Calculadoras' },
-  { path: '/aluno/feedback', icon: ChatText, label: 'Feedback' },
-  { path: '/aluno/chat', icon: ChatsCircle, label: 'Chat' },
 ]
 
 export default function FloatingMenuButton() {
@@ -57,9 +37,6 @@ export default function FloatingMenuButton() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
-
-  const isAluno = user?.role === 'aluno'
-  const navItems = isAluno ? alunoNav : adminNav
 
   const handleLogout = () => {
     setOpen(false)
@@ -108,15 +85,13 @@ export default function FloatingMenuButton() {
                   <p className="text-white font-bold text-sm truncate">
                     {user?.nome ?? 'Usuário'}
                   </p>
-                  <p className="text-gray-500 text-xs">
-                    {isAluno ? 'Aluno' : 'Administrador'}
-                  </p>
+                  <p className="text-gray-500 text-xs">Administrador</p>
                 </div>
               </div>
 
               {/* Nav Items */}
               <div className="p-3 space-y-1">
-                {navItems.map((item) => (
+                {adminNav.map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}
