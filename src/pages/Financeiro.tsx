@@ -111,7 +111,7 @@ export default function Financeiro() {
     if (val === '__new__') {
       const now = new Date()
       const nextMonths: string[] = []
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 0; i <= 3; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
         const id = format(d, 'yyyy-MM')
         if (!meses.find((m) => m.id === id)) nextMonths.push(id)
