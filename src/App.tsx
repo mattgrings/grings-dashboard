@@ -14,6 +14,7 @@ import SocialSelling from './pages/SocialSelling'
 import Treinos from './pages/Treinos'
 import Agenda from './pages/Agenda'
 import Configuracoes from './pages/Configuracoes'
+import CRM from './pages/CRM'
 import Login from './pages/Login'
 import RedefinirSenha from './pages/RedefinirSenha'
 import AuthCallback from './pages/AuthCallback'
@@ -132,6 +133,7 @@ export default function App() {
           <Route path="/relatorios" element={<Relatorios />} />
           <Route path="/treinos" element={<Treinos />} />
           <Route path="/agenda" element={<Agenda />} />
+          <Route path="/crm" element={<CRM />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
 

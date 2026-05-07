@@ -15,6 +15,7 @@ import {
   ChartBar,
   Gear,
   SignOut,
+  Handshake,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -28,6 +29,7 @@ const adminNav = [
   { path: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { path: '/social', icon: Megaphone, label: 'Social Selling' },
   { path: '/captacoes', icon: Funnel, label: 'Captações' },
+  { path: '/crm', icon: Handshake, label: 'CRM' },
   { path: '/relatorios', icon: ChartBar, label: 'Relatórios' },
   { path: '/configuracoes', icon: Gear, label: 'Configurações' },
 ]

@@ -15,6 +15,7 @@ import {
   Gear,
   Funnel,
   Users,
+  Handshake,
 } from '@phosphor-icons/react'
 import { useAuthStore } from '../../store/authStore'
 import Logo from '../ui/Logo'
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/tarefas', icon: ListChecks, label: 'Tarefas' },
   { to: '/social', icon: Megaphone, label: 'Social' },
   { to: '/captacoes', icon: Funnel, label: 'Captações' },
+  { to: '/crm', icon: Handshake, label: 'CRM' },
   { to: '/relatorios', icon: ChartBar, label: 'Relatórios' },
 ]
 
