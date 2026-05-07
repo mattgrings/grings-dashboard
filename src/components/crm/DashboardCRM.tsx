@@ -5,10 +5,11 @@ import { format, startOfMonth, isAfter } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
 import BottomSheet from '../ui/BottomSheet'
-import type { LeadCRM, AlertaCRM, MetaCRM } from '../../pages/CRM'
+import type { LeadCRM, AlertaCRM, MetaCRM, CaptacaoVolume } from '../../pages/CRM'
 
 interface Props {
   leads: LeadCRM[]
+  captacoesVolume: CaptacaoVolume[]
   alertas: AlertaCRM[]
   metas: MetaCRM | null
   mesAtual: string
@@ -19,13 +20,18 @@ function taxa(num: number, den: number) {
   return den > 0 ? ((num / den) * 100).toFixed(0) + '%' : '—'
 }
 
-export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }: Props) {
+export default function DashboardCRM({
+  leads,
+  captacoesVolume,
+  metas,
+  mesAtual,
+  onAtualizarMeta,
+}: Props) {
   const [modalMeta, setModalMeta] = useState(false)
   const [formMeta, setFormMeta] = useState({
     meta_abordagens: String(metas?.meta_abordagens ?? ''),
     meta_calls: String(metas?.meta_calls ?? ''),
     meta_vendas: String(metas?.meta_vendas ?? ''),
-    meta_faturamento: String(metas?.meta_faturamento ?? ''),
   })
 
   const hoje = new Date()
@@ -35,13 +41,20 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
     (l) => l.criado_em && isAfter(new Date(l.criado_em), inicioMes)
   )
 
+  // Total de abordagens = volume + leads qualificados
+  const totalAbordagens =
+    captacoesVolume
+      .filter((c) => {
+        const dataItem = new Date(c.data + 'T12:00:00')
+        return isAfter(dataItem, inicioMes)
+      })
+      .reduce((acc, c) => acc + c.quantidade, 0) + leadsDoMes.length
+
   const funil = {
-    captados: leadsDoMes.length,
-    abordados: leadsDoMes.filter((l) =>
-      ['abordado', 'respondeu', 'call_marcada', 'call_realizada', 'proposta_enviada', 'convertido'].includes(l.status)
-    ).length,
     responderam: leadsDoMes.filter((l) =>
-      ['respondeu', 'call_marcada', 'call_realizada', 'proposta_enviada', 'convertido'].includes(l.status)
+      ['respondeu', 'call_marcada', 'call_realizada', 'proposta_enviada', 'convertido'].includes(
+        l.status
+      )
     ).length,
     callsMarcadas: leadsDoMes.filter((l) =>
       ['call_marcada', 'call_realizada', 'proposta_enviada', 'convertido'].includes(l.status)
@@ -49,24 +62,50 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
     callsRealizadas: leadsDoMes.filter((l) =>
       ['call_realizada', 'proposta_enviada', 'convertido'].includes(l.status)
     ).length,
-    propostas: leadsDoMes.filter((l) =>
-      ['proposta_enviada', 'convertido'].includes(l.status)
-    ).length,
     convertidos: leadsDoMes.filter((l) => l.status === 'convertido').length,
-    perdidos: leadsDoMes.filter((l) => l.status === 'perdido').length,
   }
 
-  const faturamento = leadsDoMes
-    .filter((l) => l.status === 'convertido')
-    .reduce((acc, l) => acc + (l.valor_fechado ?? 0), 0)
-
   const etapasFunil = [
-    { id: 'captados', label: 'Captados', valor: funil.captados, meta: null as number | null, cor: '#888888', emoji: '📥' },
-    { id: 'abordados', label: 'Abordados', valor: funil.abordados, meta: metas?.meta_abordagens ?? null, cor: '#3B82F6', emoji: '💬' },
-    { id: 'responderam', label: 'Responderam', valor: funil.responderam, meta: null, cor: '#8B5CF6', emoji: '✉️' },
-    { id: 'calls', label: 'Calls marcadas', valor: funil.callsMarcadas, meta: metas?.meta_calls ?? null, cor: '#F59E0B', emoji: '📅' },
-    { id: 'realizadas', label: 'Calls realizadas', valor: funil.callsRealizadas, meta: null, cor: '#06B6D4', emoji: '✅' },
-    { id: 'convertidos', label: 'Convertidos', valor: funil.convertidos, meta: metas?.meta_vendas ?? null, cor: '#00E620', emoji: '💰' },
+    {
+      id: 'captados',
+      label: 'Captados / Abordados',
+      valor: totalAbordagens,
+      meta: metas?.meta_abordagens ?? null,
+      cor: '#3B82F6',
+      emoji: '📥',
+    },
+    {
+      id: 'responderam',
+      label: 'Responderam',
+      valor: funil.responderam,
+      meta: null as number | null,
+      cor: '#8B5CF6',
+      emoji: '✉️',
+    },
+    {
+      id: 'calls',
+      label: 'Calls marcadas',
+      valor: funil.callsMarcadas,
+      meta: metas?.meta_calls ?? null,
+      cor: '#F59E0B',
+      emoji: '📅',
+    },
+    {
+      id: 'realizadas',
+      label: 'Calls realizadas',
+      valor: funil.callsRealizadas,
+      meta: null,
+      cor: '#06B6D4',
+      emoji: '📞',
+    },
+    {
+      id: 'convertidos',
+      label: 'Convertidos',
+      valor: funil.convertidos,
+      meta: metas?.meta_vendas ?? null,
+      cor: '#00E620',
+      emoji: '✅',
+    },
   ]
 
   const salvarMeta = async () => {
@@ -76,7 +115,7 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
         meta_abordagens: Number(formMeta.meta_abordagens) || 0,
         meta_calls: Number(formMeta.meta_calls) || 0,
         meta_vendas: Number(formMeta.meta_vendas) || 0,
-        meta_faturamento: Number(formMeta.meta_faturamento) || 0,
+        meta_faturamento: 0,
       },
       { onConflict: 'mes' }
     )
@@ -86,17 +125,28 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* KPIs — sem faturamento */}
+      <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Abordagens', valor: funil.abordados, meta: metas?.meta_abordagens, emoji: '💬', cor: '#3B82F6' },
-          { label: 'Calls realizadas', valor: funil.callsRealizadas, meta: metas?.meta_calls, emoji: '📞', cor: '#06B6D4' },
-          { label: 'Vendas', valor: funil.convertidos, meta: metas?.meta_vendas, emoji: '💰', cor: '#00E620' },
           {
-            label: 'Faturamento',
-            valor: `R$${faturamento.toLocaleString('pt-BR')}`,
-            meta: metas?.meta_faturamento ? `R$${Number(metas.meta_faturamento).toLocaleString('pt-BR')}` : null,
-            emoji: '📈',
+            label: 'Abordagens',
+            valor: totalAbordagens,
+            meta: metas?.meta_abordagens,
+            emoji: '📥',
+            cor: '#3B82F6',
+          },
+          {
+            label: 'Calls realizadas',
+            valor: funil.callsRealizadas,
+            meta: metas?.meta_calls,
+            emoji: '📞',
+            cor: '#06B6D4',
+          },
+          {
+            label: 'Convertidos',
+            valor: funil.convertidos,
+            meta: metas?.meta_vendas,
+            emoji: '✅',
             cor: '#00E620',
           },
         ].map((kpi) => {
@@ -117,11 +167,7 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
               <div className="relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xl">{kpi.emoji}</span>
-                  {kpi.meta && (
-                    <span className="text-xs text-gray-600">
-                      meta: {typeof kpi.meta === 'number' ? kpi.meta : kpi.meta}
-                    </span>
-                  )}
+                  {kpi.meta && <span className="text-xs text-gray-600">meta: {kpi.meta}</span>}
                 </div>
                 <p className="text-2xl font-bold text-white">{kpi.valor}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
@@ -164,15 +210,17 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
           </h3>
         </div>
 
-        {funil.captados === 0 ? (
+        {totalAbordagens === 0 ? (
           <div className="py-8 text-center text-gray-500 text-sm">
-            Nenhum lead captado este mês ainda
+            Nenhuma captação registrada este mês ainda
           </div>
         ) : (
           <div className="space-y-2">
             {etapasFunil.map((etapa, i) => {
               const largura =
-                funil.captados > 0 ? Math.max((etapa.valor / funil.captados) * 100, 4) : 0
+                totalAbordagens > 0
+                  ? Math.max((etapa.valor / totalAbordagens) * 100, 4)
+                  : 0
 
               return (
                 <div key={etapa.id} className="space-y-1">
@@ -219,22 +267,30 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
           </div>
         )}
 
-        {funil.captados > 0 && (
+        {totalAbordagens > 0 && (
           <div className="flex items-center justify-between pt-3 border-t border-white/5">
             <span className="text-sm text-gray-400">
               Taxa de conversão geral (captados → vendas)
             </span>
             <span className="text-xl font-bold text-[#00E620]">
-              {taxa(funil.convertidos, funil.captados)}
+              {taxa(funil.convertidos, totalAbordagens)}
             </span>
           </div>
         )}
       </div>
 
       {/* Analise automatica */}
-      <AnaliseMelhorias funil={funil} />
+      <AnaliseMelhorias
+        funil={{
+          captados: totalAbordagens,
+          responderam: funil.responderam,
+          callsMarcadas: funil.callsMarcadas,
+          callsRealizadas: funil.callsRealizadas,
+          convertidos: funil.convertidos,
+        }}
+      />
 
-      {/* Modal de metas */}
+      {/* Modal de metas — sem faturamento */}
       <BottomSheet
         aberto={modalMeta}
         onFechar={() => setModalMeta(false)}
@@ -242,7 +298,7 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
         botaoPrimario={{ label: 'Salvar Metas', onClick: salvarMeta }}
       >
         <div className="space-y-4">
-          <div className="flex gap-2 p-3 rounded-xl bg-[#00E620]/8 border border-[#00E620]/20">
+          <div className="flex gap-2 p-3 rounded-xl bg-[#00E620]/[0.08] border border-[#00E620]/20">
             <Target size={18} color="#00E620" className="flex-shrink-0" />
             <p className="text-xs text-gray-400">
               Defina suas metas para acompanhar o progresso no funil. O dashboard vai mostrar o % de
@@ -252,13 +308,20 @@ export default function DashboardCRM({ leads, metas, mesAtual, onAtualizarMeta }
 
           {(
             [
-              { campo: 'meta_abordagens', label: '💬 Meta de abordagens', placeholder: 'Ex: 50' },
-              { campo: 'meta_calls', label: '📞 Meta de calls', placeholder: 'Ex: 20' },
-              { campo: 'meta_vendas', label: '💰 Meta de vendas', placeholder: 'Ex: 8' },
               {
-                campo: 'meta_faturamento',
-                label: '📈 Meta de faturamento (R$)',
-                placeholder: 'Ex: 5000',
+                campo: 'meta_abordagens',
+                label: '📥 Meta de abordagens/captações',
+                placeholder: 'Ex: 100',
+              },
+              {
+                campo: 'meta_calls',
+                label: '📞 Meta de calls realizadas',
+                placeholder: 'Ex: 20',
+              },
+              {
+                campo: 'meta_vendas',
+                label: '✅ Meta de vendas/conversões',
+                placeholder: 'Ex: 8',
               },
             ] as const
           ).map((item) => (
@@ -288,7 +351,6 @@ function AnaliseMelhorias({
 }: {
   funil: {
     captados: number
-    abordados: number
     responderam: number
     callsMarcadas: number
     callsRealizadas: number
@@ -298,23 +360,21 @@ function AnaliseMelhorias({
   const sugestoes: { emoji: string; texto: string; cor: string }[] = []
 
   if (funil.captados > 0) {
-    const txAbordagem = funil.abordados / funil.captados
-    const txResposta = funil.abordados > 0 ? funil.responderam / funil.abordados : 0
+    const txResposta = funil.captados > 0 ? funil.responderam / funil.captados : 0
     const txCall = funil.responderam > 0 ? funil.callsMarcadas / funil.responderam : 0
     const txVenda =
       funil.callsRealizadas > 0 ? funil.convertidos / funil.callsRealizadas : 0
 
-    if (txAbordagem < 0.5)
-      sugestoes.push({
-        emoji: '💬',
-        texto: `Só ${(txAbordagem * 100).toFixed(0)}% dos leads foram abordados. Aumente a prospecção ativa.`,
-        cor: '#FF4444',
-      })
-
-    if (txResposta < 0.3 && funil.abordados > 0)
+    if (txResposta < 0.1 && funil.captados >= 10)
       sugestoes.push({
         emoji: '📱',
         texto: `Só ${(txResposta * 100).toFixed(0)}% respondem. Revise sua abordagem inicial — o gancho precisa ser mais forte.`,
+        cor: '#FF4444',
+      })
+    else if (txResposta < 0.3 && funil.captados >= 5)
+      sugestoes.push({
+        emoji: '📱',
+        texto: `${(txResposta * 100).toFixed(0)}% de taxa de resposta. Teste abordagens diferentes para melhorar.`,
         cor: '#F59E0B',
       })
 
